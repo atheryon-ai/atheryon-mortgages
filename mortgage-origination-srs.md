@@ -175,11 +175,3 @@ Using this SRS, generate:
 
 **End of Document**
 ```
-
-Now just:
-- Copy the whole block above
-- Paste into a text editor (Notepad++, VS Code, etc.)
-- Save as `mortgage-origination-srs.md`
-- Upload it to your repo under `docs/requirements/`
-
-Let me know once you've uploaded it (or if you want me to generate additional files like `README.md`, PlantUML diagrams, or full expanded JSON schemas). I'm ready to help with the next piece!
