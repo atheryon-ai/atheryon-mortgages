@@ -1,0 +1,20 @@
+package com.atheryon.mortgages.domain.enums;
+
+public enum DocumentType {
+    PAYSLIP,
+    TAX_RETURN,
+    BANK_STATEMENT,
+    DRIVERS_LICENCE,
+    PASSPORT,
+    RATES_NOTICE,
+    CONTRACT_OF_SALE,
+    VALUATION_REPORT,
+    LOAN_STATEMENT,
+    COMPANY_FINANCIALS,
+    TRUST_DEED,
+    ACCOUNTANT_LETTER,
+    BUILDING_CONTRACT,
+    COUNCIL_APPROVAL,
+    INSURANCE_CERTIFICATE,
+    OTHER
+}
