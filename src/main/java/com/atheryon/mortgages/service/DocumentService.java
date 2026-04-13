@@ -72,6 +72,7 @@ public class DocumentService {
                 .orElseThrow(() -> new ResourceNotFoundException("Document", "id", documentId));
 
         doc.setStatus(DocumentStatus.REJECTED);
+        doc.setRejectionReason(reason);
         return documentRepository.save(doc);
     }
 

@@ -122,8 +122,12 @@ public class DecisionService {
             stateMachine.transition(app, ApplicationStatus.DECISIONED, decidedBy, "UNDERWRITER");
         }
 
-        DecisionRecord record = new DecisionRecord();
-        record.setApplication(app);
+        // Reuse existing record if overriding a prior decision (unique constraint on application_id)
+        DecisionRecord record = app.getDecisionRecord();
+        if (record == null) {
+            record = new DecisionRecord();
+            record.setApplication(app);
+        }
         record.setDecisionType(DecisionType.MANUAL);
         record.setOutcome(outcome);
         record.setDecidedBy(decidedBy);

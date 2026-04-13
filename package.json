@@ -1,0 +1,23 @@
+{
+  "name": "atheryon-mortgages",
+  "version": "1.0.0",
+  "description": "Mortgage origination reference architecture and data models for Australian lending.",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/atheryon-ai/atheryon-mortgages.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/atheryon-ai/atheryon-mortgages/issues"
+  },
+  "homepage": "https://github.com/atheryon-ai/atheryon-mortgages#readme",
+  "devDependencies": {
+    "@playwright/test": "^1.59.1"
+  }
+}

@@ -1,0 +1,1209 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Atheryon Mortgages — Test Observatory</title>
+    <style>
+        :root {
+            --bg-primary: #1a1a2e;
+            --bg-secondary: #16213e;
+            --bg-tertiary: #0f3460;
+            --bg-card: #1e2a4a;
+            --text-primary: #e8e8f0;
+            --text-secondary: #a0a0b8;
+            --text-muted: #6a6a80;
+            --accent: #4361ee;
+            --accent-hover: #5a78ff;
+            --green: #06d6a0;
+            --red: #ef476f;
+            --yellow: #ffd166;
+            --orange: #f77f00;
+            --border: #2a2a4a;
+            --mono: 'SF Mono', 'Fira Code', 'JetBrains Mono', 'Cascadia Code', Consolas, monospace;
+            --sans: -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif;
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            font-family: var(--mono);
+            background: var(--bg-primary);
+            color: var(--text-primary);
+            min-height: 100vh;
+            font-size: 13px;
+            line-height: 1.5;
+        }
+
+        header {
+            background: var(--bg-secondary);
+            border-bottom: 1px solid var(--border);
+            padding: 12px 24px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .logo {
+            font-size: 16px;
+            font-weight: 700;
+            letter-spacing: 0.5px;
+        }
+
+        .logo span { color: var(--accent); }
+
+        .header-info {
+            color: var(--text-muted);
+            font-size: 11px;
+        }
+
+        nav {
+            background: var(--bg-secondary);
+            border-bottom: 1px solid var(--border);
+            display: flex;
+            gap: 0;
+        }
+
+        .tab-btn {
+            background: none;
+            border: none;
+            color: var(--text-secondary);
+            padding: 10px 24px;
+            cursor: pointer;
+            font-family: var(--mono);
+            font-size: 12px;
+            border-bottom: 2px solid transparent;
+            transition: all 0.15s;
+        }
+
+        .tab-btn:hover { color: var(--text-primary); background: rgba(67, 97, 238, 0.1); }
+        .tab-btn.active { color: var(--accent); border-bottom-color: var(--accent); }
+
+        main { height: calc(100vh - 90px); overflow: hidden; }
+
+        .tab-content { display: none; height: 100%; }
+        .tab-content.active { display: flex; flex-direction: column; }
+
+        /* Test Runner Tab */
+        .test-runner { display: grid; grid-template-columns: 320px 1fr; height: 100%; }
+
+        .test-sidebar {
+            background: var(--bg-secondary);
+            border-right: 1px solid var(--border);
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+
+        .test-sidebar-header {
+            padding: 12px 16px;
+            border-bottom: 1px solid var(--border);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .test-sidebar-header h3 { font-size: 13px; font-weight: 600; }
+
+        .btn {
+            background: var(--accent);
+            color: white;
+            border: none;
+            padding: 6px 14px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-family: var(--mono);
+            font-size: 11px;
+            font-weight: 500;
+            transition: background 0.15s;
+        }
+
+        .btn:hover { background: var(--accent-hover); }
+        .btn:disabled { opacity: 0.5; cursor: not-allowed; }
+        .btn-sm { padding: 4px 10px; font-size: 10px; }
+        .btn-green { background: var(--green); }
+        .btn-green:hover { background: #05c090; }
+
+        .test-list {
+            flex: 1;
+            overflow-y: auto;
+            padding: 8px 0;
+        }
+
+        .test-group {
+            padding: 0 12px;
+            margin-bottom: 4px;
+        }
+
+        .test-group-header {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 6px 4px;
+            cursor: pointer;
+            border-radius: 4px;
+            font-size: 12px;
+            font-weight: 600;
+        }
+
+        .test-group-header:hover { background: rgba(255,255,255,0.05); }
+
+        .test-group-id {
+            color: var(--accent);
+            font-size: 10px;
+            min-width: 42px;
+        }
+
+        .test-item {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 4px 4px 4px 20px;
+            font-size: 11px;
+            color: var(--text-secondary);
+            border-radius: 3px;
+            cursor: pointer;
+        }
+
+        .test-item:hover { background: rgba(255,255,255,0.03); }
+
+        .status-icon {
+            width: 14px;
+            height: 14px;
+            border-radius: 50%;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 9px;
+            flex-shrink: 0;
+        }
+
+        .status-pending { border: 1.5px solid var(--text-muted); }
+        .status-running { border: 1.5px solid var(--yellow); animation: pulse 1s infinite; }
+        .status-pass { background: var(--green); color: var(--bg-primary); }
+        .status-fail { background: var(--red); color: white; }
+
+        @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.4; } }
+
+        .test-output {
+            display: flex;
+            flex-direction: column;
+            height: 100%;
+        }
+
+        .output-header {
+            padding: 10px 16px;
+            border-bottom: 1px solid var(--border);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .summary-bar {
+            display: flex;
+            gap: 16px;
+            font-size: 12px;
+        }
+
+        .summary-bar .count { font-weight: 700; }
+        .summary-bar .passed { color: var(--green); }
+        .summary-bar .failed { color: var(--red); }
+
+        .console {
+            flex: 1;
+            background: #0d0d1a;
+            padding: 12px 16px;
+            overflow-y: auto;
+            font-size: 11px;
+            line-height: 1.6;
+            white-space: pre-wrap;
+            word-break: break-all;
+            color: var(--text-secondary);
+        }
+
+        .console .line-pass { color: var(--green); }
+        .console .line-fail { color: var(--red); }
+        .console .line-info { color: var(--accent); }
+
+        /* Walkthrough Tab */
+        .walkthrough {
+            display: grid;
+            grid-template-rows: auto auto 1fr;
+            height: 100%;
+            overflow: hidden;
+        }
+
+        .state-diagram {
+            background: var(--bg-secondary);
+            border-bottom: 1px solid var(--border);
+            padding: 16px 24px;
+            overflow-x: auto;
+        }
+
+        .state-flow {
+            display: flex;
+            align-items: center;
+            gap: 4px;
+            min-width: max-content;
+            padding: 4px 0;
+        }
+
+        .state-node {
+            padding: 6px 10px;
+            border-radius: 6px;
+            font-size: 10px;
+            font-weight: 600;
+            white-space: nowrap;
+            border: 1.5px solid var(--border);
+            color: var(--text-muted);
+            background: var(--bg-primary);
+            transition: all 0.3s;
+        }
+
+        .state-node.completed {
+            border-color: var(--green);
+            color: var(--green);
+            background: rgba(6, 214, 160, 0.08);
+        }
+
+        .state-node.current {
+            border-color: var(--accent);
+            color: var(--accent);
+            background: rgba(67, 97, 238, 0.15);
+            box-shadow: 0 0 12px rgba(67, 97, 238, 0.3);
+            animation: glow 2s ease-in-out infinite;
+        }
+
+        @keyframes glow {
+            0%, 100% { box-shadow: 0 0 8px rgba(67, 97, 238, 0.2); }
+            50% { box-shadow: 0 0 16px rgba(67, 97, 238, 0.4); }
+        }
+
+        .state-arrow {
+            color: var(--text-muted);
+            font-size: 12px;
+            flex-shrink: 0;
+        }
+
+        .state-arrow.completed { color: var(--green); }
+
+        .step-controls {
+            background: var(--bg-secondary);
+            border-bottom: 1px solid var(--border);
+            padding: 12px 24px;
+            display: flex;
+            align-items: center;
+            gap: 16px;
+        }
+
+        .step-counter {
+            color: var(--text-muted);
+            font-size: 12px;
+            min-width: 120px;
+        }
+
+        .step-counter strong { color: var(--text-primary); }
+
+        .stepper {
+            display: flex;
+            align-items: center;
+            gap: 3px;
+            flex: 1;
+        }
+
+        .step-dot {
+            width: 22px;
+            height: 22px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 9px;
+            font-weight: 700;
+            border: 1.5px solid var(--border);
+            color: var(--text-muted);
+            background: var(--bg-primary);
+            transition: all 0.3s;
+            cursor: default;
+        }
+
+        .step-dot.done { border-color: var(--green); color: var(--green); background: rgba(6, 214, 160, 0.1); }
+        .step-dot.active { border-color: var(--accent); color: white; background: var(--accent); }
+        .step-line { width: 12px; height: 1.5px; background: var(--border); }
+        .step-line.done { background: var(--green); }
+
+        .walkthrough-detail {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            overflow: hidden;
+        }
+
+        .detail-pane {
+            overflow-y: auto;
+            padding: 16px;
+            border-right: 1px solid var(--border);
+        }
+
+        .detail-pane:last-child { border-right: none; }
+
+        .pane-title {
+            font-size: 11px;
+            font-weight: 600;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-bottom: 12px;
+        }
+
+        .api-call-box {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 6px;
+            padding: 12px;
+            margin-bottom: 12px;
+        }
+
+        .api-method {
+            display: inline-block;
+            padding: 2px 8px;
+            border-radius: 3px;
+            font-size: 10px;
+            font-weight: 700;
+            margin-right: 8px;
+        }
+
+        .api-method.POST { background: rgba(6, 214, 160, 0.15); color: var(--green); }
+        .api-method.GET { background: rgba(67, 97, 238, 0.15); color: var(--accent); }
+        .api-method.DELETE { background: rgba(239, 71, 111, 0.15); color: var(--red); }
+
+        .api-path { font-size: 12px; color: var(--text-primary); }
+
+        .json-view {
+            background: #0d0d1a;
+            border: 1px solid var(--border);
+            border-radius: 6px;
+            padding: 12px;
+            font-size: 11px;
+            line-height: 1.6;
+            overflow-x: auto;
+            white-space: pre-wrap;
+            word-break: break-word;
+            max-height: calc(100vh - 350px);
+            overflow-y: auto;
+        }
+
+        .json-key { color: #7ec8e3; }
+        .json-string { color: #98c379; }
+        .json-number { color: #d19a66; }
+        .json-boolean { color: #c678dd; }
+        .json-null { color: var(--text-muted); }
+        .json-changed { background: rgba(255, 209, 102, 0.15); border-radius: 2px; padding: 0 2px; }
+
+        .step-note {
+            margin-top: 12px;
+            padding: 10px;
+            background: rgba(67, 97, 238, 0.08);
+            border-left: 3px solid var(--accent);
+            border-radius: 0 4px 4px 0;
+            font-size: 11px;
+            color: var(--text-secondary);
+            line-height: 1.6;
+        }
+
+        /* Data Inspector Tab */
+        .inspector {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            height: 100%;
+            overflow: hidden;
+        }
+
+        .inspector-pane {
+            overflow-y: auto;
+            padding: 16px;
+        }
+
+        .inspector-pane:first-child { border-right: 1px solid var(--border); }
+
+        .tree-node {
+            margin-left: 16px;
+        }
+
+        .tree-toggle {
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            padding: 3px 0;
+            color: var(--text-primary);
+            font-size: 12px;
+        }
+
+        .tree-toggle:hover { color: var(--accent); }
+
+        .tree-toggle .arrow {
+            font-size: 8px;
+            width: 12px;
+            transition: transform 0.15s;
+            color: var(--text-muted);
+        }
+
+        .tree-toggle .arrow.open { transform: rotate(90deg); }
+
+        .tree-toggle .type-badge {
+            font-size: 9px;
+            padding: 1px 5px;
+            border-radius: 3px;
+            background: var(--bg-tertiary);
+            color: var(--accent);
+        }
+
+        .tree-leaf {
+            margin-left: 16px;
+            padding: 2px 0;
+            font-size: 11px;
+        }
+
+        .tree-leaf .key { color: #7ec8e3; }
+        .tree-leaf .value { color: var(--text-secondary); }
+
+        .event-timeline { margin-top: 16px; }
+
+        .event-item {
+            display: flex;
+            gap: 12px;
+            padding: 8px 0;
+            border-bottom: 1px solid rgba(255,255,255,0.05);
+            font-size: 11px;
+        }
+
+        .event-time {
+            color: var(--text-muted);
+            min-width: 70px;
+            font-size: 10px;
+        }
+
+        .event-type {
+            font-weight: 600;
+            min-width: 160px;
+        }
+
+        .event-transition {
+            color: var(--text-secondary);
+        }
+
+        .event-transition .from { color: var(--orange); }
+        .event-transition .to { color: var(--green); }
+
+        .empty-state {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100%;
+            color: var(--text-muted);
+            gap: 12px;
+        }
+
+        .empty-state .icon { font-size: 48px; opacity: 0.3; }
+        .empty-state p { font-size: 13px; }
+
+        /* Scrollbar */
+        ::-webkit-scrollbar { width: 6px; height: 6px; }
+        ::-webkit-scrollbar-track { background: transparent; }
+        ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
+        ::-webkit-scrollbar-thumb:hover { background: #3a3a5a; }
+
+        /* Walkthrough complete banner */
+        .complete-banner {
+            background: rgba(6, 214, 160, 0.1);
+            border: 1px solid var(--green);
+            border-radius: 8px;
+            padding: 16px;
+            margin: 12px 0;
+            text-align: center;
+        }
+
+        .complete-banner h3 { color: var(--green); margin-bottom: 4px; }
+    </style>
+</head>
+<body>
+    <header>
+        <div class="logo"><span>ATHERYON</span> Test Observatory</div>
+        <div class="header-info">Mortgage Origination Platform — Dev Dashboard</div>
+    </header>
+
+    <nav>
+        <button class="tab-btn active" data-tab="tests">Test Runner</button>
+        <button class="tab-btn" data-tab="walkthrough">Lifecycle Walkthrough</button>
+        <button class="tab-btn" data-tab="inspector">Data Inspector</button>
+    </nav>
+
+    <main>
+        <!-- Tab 1: Test Runner -->
+        <div id="tests" class="tab-content active">
+            <div class="test-runner">
+                <div class="test-sidebar">
+                    <div class="test-sidebar-header">
+                        <h3>Test Catalog</h3>
+                        <button class="btn btn-sm btn-green" id="runAllBtn" onclick="runAllTests()">Run All</button>
+                    </div>
+                    <div class="test-list" id="testList">
+                        <div class="empty-state" style="height: 200px">
+                            <p>Loading catalog...</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="test-output">
+                    <div class="output-header">
+                        <span style="font-size: 12px; font-weight: 600;">Output</span>
+                        <div class="summary-bar" id="testSummary">
+                            <span>Total: <span class="count" id="totalCount">0</span></span>
+                            <span class="passed">Passed: <span class="count" id="passCount">0</span></span>
+                            <span class="failed">Failed: <span class="count" id="failCount">0</span></span>
+                        </div>
+                    </div>
+                    <div class="console" id="testConsole">Waiting for test run...\n\nClick "Run All" or select individual tests to begin.</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Tab 2: Lifecycle Walkthrough -->
+        <div id="walkthrough" class="tab-content">
+            <div class="walkthrough" id="walkthroughContainer">
+                <div class="state-diagram">
+                    <div class="state-flow" id="stateFlow"></div>
+                </div>
+                <div class="step-controls">
+                    <div class="step-counter">
+                        Step <strong id="currentStepNum">0</strong> of <strong>14</strong>
+                    </div>
+                    <div class="stepper" id="stepper"></div>
+                    <button class="btn" id="walkthroughBtn" onclick="walkthroughAction()">Start Walkthrough</button>
+                </div>
+                <div class="walkthrough-detail">
+                    <div class="detail-pane" id="requestPane">
+                        <div class="pane-title">API Request</div>
+                        <div id="requestContent">
+                            <div class="empty-state" style="height: 300px">
+                                <p>Click "Start Walkthrough" to begin</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="detail-pane" id="responsePane">
+                        <div class="pane-title">Response / State</div>
+                        <div id="responseContent">
+                            <div class="empty-state" style="height: 300px">
+                                <p>Response data will appear here</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Tab 3: Data Inspector -->
+        <div id="inspector" class="tab-content">
+            <div class="inspector">
+                <div class="inspector-pane">
+                    <div class="pane-title">Entity Graph</div>
+                    <div id="entityTree">
+                        <div class="empty-state" style="height: 400px">
+                            <p>Run a walkthrough first to inspect application data</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="inspector-pane">
+                    <div class="pane-title">Workflow Events (Audit Trail)</div>
+                    <div id="eventTimeline">
+                        <div class="empty-state" style="height: 400px">
+                            <p>Events will appear after walkthrough steps</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <script>
+    // ==================== Tab Switching ====================
+    document.querySelectorAll('.tab-btn').forEach(btn => {
+        btn.addEventListener('click', () => {
+            document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+            document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+            btn.classList.add('active');
+            document.getElementById(btn.dataset.tab).classList.add('active');
+        });
+    });
+
+    // ==================== State Definitions ====================
+    const ALL_STATES = [
+        'DRAFT', 'IN_PROGRESS', 'READY_FOR_SUBMISSION', 'SUBMITTED',
+        'UNDER_ASSESSMENT', 'VERIFIED', 'DECISIONED', 'APPROVED',
+        'OFFER_ISSUED', 'OFFER_ACCEPTED', 'SETTLEMENT_IN_PROGRESS', 'SETTLED'
+    ];
+
+    const STEP_NAMES = [
+        'Create Application', 'Add Borrower', 'Add Property Security',
+        'Upload Documents', 'Submit Application', 'Begin Assessment',
+        'Verify Documents', 'Complete Verification', 'Add Financial Data',
+        'Run Decision', 'Generate Offer', 'Accept Offer',
+        'Begin Settlement', 'Complete Settlement'
+    ];
+
+    // ==================== Test Runner ====================
+    let testCatalog = [];
+
+    async function loadTestCatalog() {
+        try {
+            const res = await fetch('/api/dev/tests');
+            const data = await res.json();
+            testCatalog = data.catalog || [];
+            renderTestCatalog();
+        } catch (e) {
+            document.getElementById('testList').innerHTML =
+                '<div class="empty-state" style="height:200px"><p>Failed to load catalog. Is the dev profile active?</p></div>';
+        }
+    }
+
+    function renderTestCatalog(results) {
+        const container = document.getElementById('testList');
+        container.innerHTML = '';
+
+        testCatalog.forEach(tc => {
+            const group = document.createElement('div');
+            group.className = 'test-group';
+
+            const suiteResult = results?.suites?.find(s => s.shortName === tc.className);
+            let statusClass = 'status-pending';
+            let statusText = '';
+            if (suiteResult) {
+                if (suiteResult.failures > 0 || suiteResult.errors > 0) {
+                    statusClass = 'status-fail';
+                    statusText = '\u2717';
+                } else {
+                    statusClass = 'status-pass';
+                    statusText = '\u2713';
+                }
+            }
+
+            group.innerHTML = `
+                <div class="test-group-header" onclick="runSingleTest('${tc.fullClassName}')">
+                    <span class="status-icon ${statusClass}">${statusText}</span>
+                    <span class="test-group-id">${tc.processId}</span>
+                    <span>${tc.processName}</span>
+                </div>
+            `;
+
+            if (suiteResult?.testCases) {
+                suiteResult.testCases.forEach(t => {
+                    const item = document.createElement('div');
+                    item.className = 'test-item';
+                    const s = t.status === 'PASSED' ? 'status-pass' : 'status-fail';
+                    const icon = t.status === 'PASSED' ? '\u2713' : '\u2717';
+                    item.innerHTML = `
+                        <span class="status-icon ${s}">${icon}</span>
+                        <span>${t.name}</span>
+                        <span style="margin-left:auto;color:var(--text-muted);font-size:10px">${t.time}s</span>
+                    `;
+                    group.appendChild(item);
+                });
+            }
+
+            container.appendChild(group);
+        });
+    }
+
+    function runAllTests() {
+        runTests(null);
+    }
+
+    function runSingleTest(className) {
+        runTests([className]);
+    }
+
+    function runTests(tests) {
+        const console_ = document.getElementById('testConsole');
+        const btn = document.getElementById('runAllBtn');
+        btn.disabled = true;
+        btn.textContent = 'Running...';
+        console_.innerHTML = '';
+
+        document.getElementById('totalCount').textContent = '0';
+        document.getElementById('passCount').textContent = '0';
+        document.getElementById('failCount').textContent = '0';
+
+        // Mark all as running
+        document.querySelectorAll('.test-group-header .status-icon').forEach(icon => {
+            icon.className = 'status-icon status-running';
+            icon.textContent = '';
+        });
+
+        const body = tests ? JSON.stringify({ tests }) : '{}';
+        const evtSource = new EventSource('/api/dev/tests/run?' + new URLSearchParams({
+            _body: body
+        }));
+
+        // SSE doesn't support POST body easily, so use fetch with SSE parsing
+        fetch('/api/dev/tests/run', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: body
+        }).then(async response => {
+            const reader = response.body.getReader();
+            const decoder = new TextDecoder();
+            let buffer = '';
+
+            while (true) {
+                const { done, value } = await reader.read();
+                if (done) break;
+
+                buffer += decoder.decode(value, { stream: true });
+                const lines = buffer.split('\n');
+                buffer = lines.pop();
+
+                for (const line of lines) {
+                    if (line.startsWith('data:')) {
+                        const data = line.substring(5).trim();
+                        handleTestEvent(line.includes('event:') ? 'output' : 'output', data);
+                    } else if (line.startsWith('event:')) {
+                        // Will be handled with next data line
+                    }
+                }
+            }
+
+            // Process remaining buffer
+            if (buffer.trim()) {
+                const lines = buffer.split('\n');
+                for (const line of lines) {
+                    if (line.startsWith('data:')) {
+                        handleTestEvent('output', line.substring(5).trim());
+                    }
+                }
+            }
+
+            // Fetch final results
+            setTimeout(loadTestResults, 1000);
+
+            btn.disabled = false;
+            btn.textContent = 'Run All';
+        }).catch(err => {
+            appendToConsole('Error: ' + err.message, 'line-fail');
+            btn.disabled = false;
+            btn.textContent = 'Run All';
+        });
+    }
+
+    function handleTestEvent(eventName, data) {
+        try {
+            const parsed = JSON.parse(data);
+            if (parsed.exitCode !== undefined) {
+                const msg = parsed.success ? '\n=== ALL TESTS PASSED ===' : '\n=== SOME TESTS FAILED ===';
+                appendToConsole(msg, parsed.success ? 'line-pass' : 'line-fail');
+                return;
+            }
+        } catch (e) {
+            // Not JSON, treat as plain text
+        }
+
+        let cssClass = '';
+        if (data.includes('PASSED') || data.includes('BUILD SUCCESSFUL')) cssClass = 'line-pass';
+        else if (data.includes('FAILED') || data.includes('BUILD FAILED') || data.includes('FAILURE')) cssClass = 'line-fail';
+        else if (data.includes('> Task') || data.includes('Testing')) cssClass = 'line-info';
+
+        appendToConsole(data, cssClass);
+    }
+
+    function appendToConsole(text, cssClass) {
+        const console_ = document.getElementById('testConsole');
+        const line = document.createElement('div');
+        if (cssClass) line.className = cssClass;
+        line.textContent = text;
+        console_.appendChild(line);
+        console_.scrollTop = console_.scrollHeight;
+    }
+
+    async function loadTestResults() {
+        try {
+            const res = await fetch('/api/dev/tests/results');
+            const data = await res.json();
+
+            if (data.summary) {
+                document.getElementById('totalCount').textContent = data.summary.totalTests;
+                document.getElementById('passCount').textContent = data.summary.passed;
+                document.getElementById('failCount').textContent = data.summary.failed + data.summary.errors;
+            }
+
+            renderTestCatalog(data);
+        } catch (e) {
+            // Results not available yet
+        }
+    }
+
+    // ==================== Walkthrough ====================
+    let walkthroughState = {
+        sessionId: null,
+        currentStep: 0,
+        started: false,
+        complete: false,
+        completedStates: [],
+        currentState: null
+    };
+
+    function initStateFlow() {
+        const container = document.getElementById('stateFlow');
+        container.innerHTML = ALL_STATES.map((state, i) => {
+            const arrow = i < ALL_STATES.length - 1 ? '<span class="state-arrow">\u2192</span>' : '';
+            const label = state.replace(/_/g, ' ');
+            return `<span class="state-node" id="state-${state}">${label}</span>${arrow}`;
+        }).join('');
+    }
+
+    function initStepper() {
+        const container = document.getElementById('stepper');
+        let html = '';
+        for (let i = 1; i <= 14; i++) {
+            html += `<div class="step-dot" id="step-${i}" title="${STEP_NAMES[i-1]}">${i}</div>`;
+            if (i < 14) html += '<div class="step-line" id="line-${i}"></div>';
+        }
+        container.innerHTML = html;
+    }
+
+    function updateStateFlow(currentState, completedStates) {
+        ALL_STATES.forEach(state => {
+            const node = document.getElementById('state-' + state);
+            if (!node) return;
+            node.className = 'state-node';
+            if (completedStates.includes(state)) node.classList.add('completed');
+            if (state === currentState) {
+                node.classList.remove('completed');
+                node.classList.add('current');
+            }
+        });
+
+        document.querySelectorAll('.state-arrow').forEach((arrow, i) => {
+            arrow.className = 'state-arrow';
+            if (i < completedStates.length && completedStates.includes(ALL_STATES[i])) {
+                arrow.classList.add('completed');
+            }
+        });
+    }
+
+    function updateStepper(currentStep) {
+        for (let i = 1; i <= 14; i++) {
+            const dot = document.getElementById('step-' + i);
+            if (!dot) continue;
+            dot.className = 'step-dot';
+            if (i < currentStep) dot.classList.add('done');
+            if (i === currentStep) dot.classList.add('active');
+        }
+
+        document.querySelectorAll('.step-line').forEach((line, i) => {
+            line.className = 'step-line';
+            if (i + 1 < currentStep) line.classList.add('done');
+        });
+    }
+
+    async function walkthroughAction() {
+        const btn = document.getElementById('walkthroughBtn');
+
+        if (!walkthroughState.started) {
+            btn.disabled = true;
+            btn.textContent = 'Starting...';
+            try {
+                const res = await fetch('/api/dev/walkthrough/start', { method: 'POST' });
+                const data = await res.json();
+                walkthroughState.sessionId = data.sessionId;
+                walkthroughState.started = true;
+                walkthroughState.currentStep = 0;
+                walkthroughState.completedStates = [];
+                btn.textContent = 'Next Step \u2192';
+                btn.disabled = false;
+
+                document.getElementById('requestContent').innerHTML = `
+                    <div class="api-call-box">
+                        <span class="api-method POST">SETUP</span>
+                        <span class="api-path">Product Created</span>
+                    </div>
+                    <div class="step-note">
+                        Session <strong>${data.sessionId}</strong> started.<br>
+                        Product: ${data.productCreated?.name} (${data.productCreated?.rate})<br>
+                        Click "Next Step" to begin the mortgage lifecycle.
+                    </div>
+                `;
+                document.getElementById('responseContent').innerHTML = `
+                    <div class="json-view">${syntaxHighlight(JSON.stringify(data, null, 2))}</div>
+                `;
+            } catch (e) {
+                btn.textContent = 'Start Walkthrough';
+                btn.disabled = false;
+                alert('Failed to start: ' + e.message);
+            }
+        } else if (walkthroughState.complete) {
+            // Reset
+            walkthroughState = { sessionId: null, currentStep: 0, started: false, complete: false, completedStates: [], currentState: null };
+            btn.textContent = 'Start Walkthrough';
+            initStateFlow();
+            initStepper();
+            document.getElementById('currentStepNum').textContent = '0';
+            document.getElementById('requestContent').innerHTML = '<div class="empty-state" style="height:300px"><p>Click "Start Walkthrough" to begin</p></div>';
+            document.getElementById('responseContent').innerHTML = '<div class="empty-state" style="height:300px"><p>Response data will appear here</p></div>';
+        } else {
+            // Execute next step
+            btn.disabled = true;
+            btn.textContent = 'Executing...';
+            try {
+                const res = await fetch(`/api/dev/walkthrough/${walkthroughState.sessionId}/next`, { method: 'POST' });
+                const data = await res.json();
+
+                walkthroughState.currentStep = data.stepNumber;
+                document.getElementById('currentStepNum').textContent = data.stepNumber;
+
+                // Track all states up to the new state as completed
+                // (handles intermediate states like IN_PROGRESS, READY_FOR_SUBMISSION, DECISIONED)
+                if (data.newState) {
+                    const newStateIdx = ALL_STATES.indexOf(data.newState);
+                    if (newStateIdx >= 0) {
+                        for (let i = 0; i < newStateIdx; i++) {
+                            if (!walkthroughState.completedStates.includes(ALL_STATES[i])) {
+                                walkthroughState.completedStates.push(ALL_STATES[i]);
+                            }
+                        }
+                    }
+                }
+                walkthroughState.currentState = data.newState;
+
+                updateStateFlow(data.newState, walkthroughState.completedStates);
+                updateStepper(data.stepNumber);
+
+                // Render request pane
+                renderRequestPane(data);
+
+                // Render response pane
+                renderResponsePane(data);
+
+                // Update inspector tab
+                if (data.applicationSnapshot) {
+                    renderEntityTree(data.applicationSnapshot);
+                }
+                if (data.workflowEvents) {
+                    renderEventTimeline(data.workflowEvents);
+                }
+
+                if (data.complete || data.stepsRemaining === 0) {
+                    walkthroughState.complete = true;
+                    if (data.newState && !walkthroughState.completedStates.includes(data.newState)) {
+                        walkthroughState.completedStates.push(data.newState);
+                    }
+                    updateStateFlow(null, walkthroughState.completedStates);
+                    btn.textContent = 'Reset';
+                } else {
+                    btn.textContent = `Next: ${STEP_NAMES[data.stepNumber] || 'Done'} \u2192`;
+                }
+                btn.disabled = false;
+            } catch (e) {
+                btn.disabled = false;
+                btn.textContent = 'Next Step \u2192';
+                const errorData = await e.response?.json?.() || { message: e.message };
+                document.getElementById('responseContent').innerHTML = `
+                    <div class="json-view" style="color: var(--red)">${JSON.stringify(errorData, null, 2)}</div>
+                `;
+            }
+        }
+    }
+
+    function renderRequestPane(data) {
+        const api = data.apiCall || {};
+        const method = api.method || 'POST';
+
+        let bodyHtml = '';
+        if (api.body && api.body !== 'null') {
+            const bodyJson = typeof api.body === 'string' ? api.body : JSON.stringify(api.body, null, 2);
+            bodyHtml = `<div class="json-view" style="margin-top:8px">${syntaxHighlight(bodyJson)}</div>`;
+        }
+
+        let noteHtml = '';
+        if (api.note) {
+            noteHtml = `<div class="step-note">${api.note}</div>`;
+        }
+
+        let extraHtml = '';
+        if (data.stateTransitions) {
+            extraHtml += '<div class="step-note"><strong>State transitions:</strong><br>' +
+                data.stateTransitions.map(t => `  ${t}`).join('<br>') + '</div>';
+        }
+        if (data.decisionFlow) {
+            extraHtml += '<div class="step-note"><strong>Decision flow:</strong><br>' +
+                data.decisionFlow.map(t => `  ${t}`).join('<br>') + '</div>';
+        }
+
+        document.getElementById('requestContent').innerHTML = `
+            <div class="api-call-box">
+                <span class="api-method ${method}">${method}</span>
+                <span class="api-path">${api.path || ''}</span>
+            </div>
+            ${bodyHtml}
+            ${noteHtml}
+            ${extraHtml}
+            ${data.complete ? '<div class="complete-banner"><h3>Journey Complete</h3><p>' + (data.message || '') + '</p></div>' : ''}
+        `;
+    }
+
+    function renderResponsePane(data) {
+        const changedFields = data.changedFields || [];
+        let snapshotJson = JSON.stringify(data.applicationSnapshot || {}, null, 2);
+
+        // Highlight changed fields
+        changedFields.forEach(field => {
+            const regex = new RegExp(`("${field.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}"\\s*:)`, 'g');
+            snapshotJson = snapshotJson.replace(regex, '<span class="json-changed">$1</span>');
+        });
+
+        let html = `
+            <div style="margin-bottom:8px">
+                <span style="font-size:10px;color:var(--text-muted)">
+                    ${data.previousState || '(none)'} \u2192 <span style="color:var(--green)">${data.newState || '(unchanged)'}</span>
+                </span>
+            </div>
+            <div class="json-view">${syntaxHighlight(snapshotJson)}</div>
+        `;
+
+        document.getElementById('responseContent').innerHTML = html;
+    }
+
+    // ==================== Data Inspector ====================
+    function renderEntityTree(snapshot) {
+        const container = document.getElementById('entityTree');
+        container.innerHTML = '';
+
+        const sections = [
+            { key: 'root', label: 'LoanApplication', data: filterKeys(snapshot, ['parties','securities','documents','financialSnapshot','decisionRecord','offer','consents','workflowEvents']) },
+            { key: 'product', label: 'Product', data: snapshot.product },
+            { key: 'parties', label: 'Parties', data: snapshot.parties },
+            { key: 'securities', label: 'Securities', data: snapshot.securities },
+            { key: 'documents', label: 'Documents', data: snapshot.documents },
+            { key: 'financialSnapshot', label: 'FinancialSnapshot', data: snapshot.financialSnapshot },
+            { key: 'decisionRecord', label: 'DecisionRecord', data: snapshot.decisionRecord },
+            { key: 'offer', label: 'Offer', data: snapshot.offer },
+            { key: 'consents', label: 'Consents', data: snapshot.consents },
+        ];
+
+        sections.forEach(section => {
+            if (!section.data) return;
+            const node = document.createElement('div');
+            node.innerHTML = buildTreeNode(section.label, section.data, true);
+            container.appendChild(node);
+        });
+    }
+
+    function filterKeys(obj, exclude) {
+        if (!obj) return obj;
+        const result = {};
+        for (const [k, v] of Object.entries(obj)) {
+            if (!exclude.includes(k)) result[k] = v;
+        }
+        return result;
+    }
+
+    function buildTreeNode(label, data, open) {
+        if (data === null || data === undefined) return '';
+
+        const id = 'tree-' + Math.random().toString(36).substr(2, 6);
+        const isArray = Array.isArray(data);
+        const isObject = typeof data === 'object' && !isArray;
+
+        if (!isObject && !isArray) {
+            return `<div class="tree-leaf"><span class="key">${label}:</span> <span class="value">${escapeHtml(String(data))}</span></div>`;
+        }
+
+        const count = isArray ? data.length : Object.keys(data).length;
+        const typeBadge = isArray ? `[${count}]` : `{${count}}`;
+
+        let childrenHtml = '';
+        if (isArray) {
+            data.forEach((item, i) => {
+                childrenHtml += `<div class="tree-node">${buildTreeNode(`[${i}]`, item, false)}</div>`;
+            });
+        } else {
+            for (const [k, v] of Object.entries(data)) {
+                if (v !== null && v !== undefined) {
+                    childrenHtml += `<div class="tree-node">${buildTreeNode(k, v, false)}</div>`;
+                }
+            }
+        }
+
+        return `
+            <div class="tree-toggle" onclick="this.querySelector('.arrow').classList.toggle('open');this.nextElementSibling.style.display=this.nextElementSibling.style.display==='none'?'block':'none'">
+                <span class="arrow ${open ? 'open' : ''}">\u25B6</span>
+                <span>${escapeHtml(label)}</span>
+                <span class="type-badge">${typeBadge}</span>
+            </div>
+            <div style="display:${open ? 'block' : 'none'}">
+                ${childrenHtml}
+            </div>
+        `;
+    }
+
+    function renderEventTimeline(events) {
+        const container = document.getElementById('eventTimeline');
+        if (!events || events.length === 0) {
+            container.innerHTML = '<div class="empty-state" style="height:200px"><p>No events recorded</p></div>';
+            return;
+        }
+
+        container.innerHTML = events.map(e => {
+            const time = e.occurredAt ? new Date(e.occurredAt).toLocaleTimeString() : '';
+            const transition = e.previousState && e.newState
+                ? `<span class="from">${e.previousState}</span> \u2192 <span class="to">${e.newState}</span>`
+                : '';
+            return `
+                <div class="event-item">
+                    <span class="event-time">${time}</span>
+                    <span class="event-type">${e.eventType}</span>
+                    <span class="event-transition">${transition}</span>
+                    <span style="color:var(--text-muted);font-size:10px">${e.actorId || ''}</span>
+                </div>
+            `;
+        }).join('');
+    }
+
+    // ==================== Utilities ====================
+    function syntaxHighlight(json) {
+        if (!json) return '';
+        json = escapeHtml(json);
+        return json.replace(
+            /("(\\u[a-zA-Z0-9]{4}|\\[^u]|[^\\"])*"(\s*:)?|\b(true|false|null)\b|-?\d+(?:\.\d*)?(?:[eE][+\-]?\d+)?)/g,
+            function (match) {
+                let cls = 'json-number';
+                if (/^"/.test(match)) {
+                    if (/:$/.test(match)) {
+                        cls = 'json-key';
+                    } else {
+                        cls = 'json-string';
+                    }
+                } else if (/true|false/.test(match)) {
+                    cls = 'json-boolean';
+                } else if (/null/.test(match)) {
+                    cls = 'json-null';
+                }
+                return '<span class="' + cls + '">' + match + '</span>';
+            }
+        );
+    }
+
+    function escapeHtml(str) {
+        const div = document.createElement('div');
+        div.textContent = str;
+        return div.innerHTML;
+    }
+
+    // ==================== Init ====================
+    initStateFlow();
+    initStepper();
+    loadTestCatalog();
+
+    // Try to load existing test results on page load
+    loadTestResults();
+    </script>
+</body>
+</html>

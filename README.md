@@ -1,52 +1,77 @@
 # atheryon-mortgages
 
-Mortgage origination reference architecture and data models for Australian lending.
+Mortgage origination platform for Australian residential lending.
 
 **Informed by**:
-- Oracle Banking Platform (One Bank Platform / Origination of Loans & Mortgages module used by Westpac)
-- LIXI2 Credit Application Standard (CAL, DAS, etc.)
+- Oracle Banking Platform (Origination of Loans & Mortgages module)
+- LIXI2 Credit Application Standard (CAL 2.6.x)
 - Australian Consumer Data Right (CDR) Open Banking Product & Lending Rates schemas
+
+## Tech Stack
+
+- **Backend**: Java 17 / Spring Boot 3.3.7
+- **Database**: H2 in-memory (dev), PostgreSQL (target production)
+- **State engine**: Custom `ApplicationStateMachine` with strict transition rules
+- **API**: RESTful JSON, documented in `mortgage-origination-srs.md` Section 8
+- **Data model**: JPA/Hibernate entities inspired by LIXI2 + Oracle FAC patterns
 
 ## Core Entities
 
-See `models/` directory for detailed JSON schemas.
-
-### Key Entities
 - **Product** — Mortgage product catalogue (CDR + Oracle Business Product)
 - **Party** — Borrower, Guarantor, Company, Trust (LIXI2 + Oracle Party)
-- **LoanApplication** — Core application object with status (Oracle LoanApplication + LIXI2 CAL root)
-- **Security/Collateral** — Property details and valuations (LIXI2 Security)
-- **FinancialSnapshot**, **Document**, **DecisionRecord**
+- **LoanApplication** — Root aggregate with 16-state lifecycle
+- **PropertySecurity** — Property details and valuations (LIXI2 Security)
+- **FinancialSnapshot** — Income, expenses, assets, liabilities, serviceability
+- **Document**, **DecisionRecord**, **Offer**, **ConsentRecord**, **WorkflowEvent**
 
-## Business Processes & State Transitions
+Full JSON schemas in `mortgage-origination-srs.md` Section 4.
 
-Documented with state-change functions that align to Oracle Functional Activity Codes (FACs) and LIXI2 message flows:
+## Business Processes
 
-1. **Product Enquiry / Pre-Application**
-2. **Application Initiation / Capture**
-3. **Application Submission**
-4. **Assessment & Verification**
-5. **Decisioning & Approval**
-6. **Offer & Acceptance**
-7. **Settlement & Funding**
-8. **Post-Settlement Hand-off**
+Eight business processes aligned to Oracle FACs (see SRS Section 3):
 
-Full details with state machines and API mappings: `processes/`
+| # | Process | Oracle FAC |
+|---|---------|------------|
+| 1 | Product Enquiry / Pre-Application | RPM_FA_LO_ENQUIRY |
+| 2 | Application Initiation / Capture | RPM_FA_LO_APP_ENTRY |
+| 3 | Application Submission | RPM_FA_LO_APP_SUBMIT |
+| 4 | Assessment & Verification | RPM_FA_LO_APP_ASSESS |
+| 5 | Decisioning & Approval | RPM_FA_LO_APP_DECISION |
+| 6 | Offer & Acceptance | RPM_FA_LO_OFFER |
+| 7 | Settlement & Funding | RPM_FA_LO_SETTLE |
+| 8 | Hand-Off to Servicing | RPM_FA_LO_HANDOFF |
 
-## Integration Patterns
-- Broker inflows → LIXI2 JSON/XML → transformation adapter → Oracle Banking APIs (REST)
-- Product data → Open Banking Product API (read-only)
-- Internal channels → direct Oracle Origination REST services
+State machine diagram in SRS Section 6.2.
 
-## Tech Stack Guidance
-- Backend: Java / Microservices (Oracle extensions)
-- Data layer: Oracle DB with custom extensions
-- Messaging: LIXI2 schemas for external, internal canonical model
-- State engine: Oracle Workflow + rules engine
+## Test Observatory Dashboard
 
-## Next Steps
-- Expand full JSON schemas with every LIXI2 element
-- Add PlantUML state diagrams
-- Generate OpenAPI specs for Oracle-style endpoints
+A dev-only dashboard at `http://localhost:8080` with three tabs:
 
-Contributions and internal use only.
+1. **Test Runner** — Run E2E test suites by SRS process, streamed output
+2. **Lifecycle Walkthrough** — Interactive 14-step walkthrough exercising the full origination lifecycle (see [walkthrough step mapping](docs/walkthrough-steps.md))
+3. **Data Inspector** — Entity tree + audit trail at any point during the walkthrough
+
+### Running
+
+```bash
+JAVA_HOME=/opt/homebrew/opt/openjdk@17 ./gradlew bootRun --args='--spring.profiles.active=dev'
+# Open http://localhost:8080
+```
+
+### Playwright E2E Tests
+
+```bash
+npx playwright test   # 23 tests covering all 3 dashboard tabs + API endpoints
+```
+
+## Key Files
+
+| File | Purpose |
+|------|---------|
+| `mortgage-origination-srs.md` | Full SRS — data model, state machine, API surface, business rules, LIXI2 integration |
+| `docs/walkthrough-steps.md` | 14-step walkthrough mapped to SRS business processes |
+| `src/main/resources/static/index.html` | Test Observatory dashboard (single-page, dark theme) |
+| `src/.../service/WalkthroughService.java` | Walkthrough backend — calls real service layer |
+| `src/.../controller/DevTestController.java` | Test runner API — Gradle + JUnit XML parsing |
+| `e2e/observatory.spec.js` | Playwright tests for the dashboard |
+| `playwright.config.js` | Playwright config (Chromium, localhost:8080) |
