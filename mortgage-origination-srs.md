@@ -1,13 +1,14 @@
 
+
 ```markdown
 # Mortgage Origination System – Software Requirements Specification (SRS)
 
 **Project**: Atheryon Mortgages  
 **Repository**: https://github.com/atheryon-ai/atheryon-mortgages  
-**Version**: 1.1 (Expanded)  
+**Version**: 1.3 (with PlantUML Diagrams)  
 **Date**: 13 April 2026  
 **Status**: Ready for Technical Design  
-**Audience**: Claude – to produce detailed HLD, ERD, Swagger/OpenAPI, DB schema, microservices, state machines, and LIXI2 adapters.
+**Audience**: Claude – for producing detailed HLD, ERD, Swagger/OpenAPI, DB schema, microservices, state machines, and LIXI2 adapters.
 
 ## 1. Introduction & Purpose
 This SRS defines **ALL** required data objects, lifecycles, domain events, and business processes for a mortgage origination system modelled on **Westpac’s One Bank Platform (Oracle Banking Platform – Origination of Loans & Mortgages)**.
@@ -36,25 +37,13 @@ It integrates:
 ### 4.1 Product (CDR + Oracle Business Product)
 ```json
 {
-  "productId": "string",                    // CDR productId
+  "productId": "string",
   "productType": "MORTGAGE",
   "name": "string",
-  "lendingRates": [
-    {
-      "rateType": "VARIABLE|FIXED",
-      "rate": "decimal",
-      "comparisonRate": "decimal",
-      "calculationMethod": "string"
-    }
-  ],
+  "lendingRates": [{ "rateType": "VARIABLE|FIXED", "rate": "decimal", "comparisonRate": "decimal" }],
   "features": ["OFFSET_ACCOUNT", "REDRAW", "PORTABLE", "CASHBACK", "MULTI_OFFSET"],
-  "eligibility": {
-    "minimumAge": "int",
-    "maximumLTV": "decimal",
-    "minimumLoanAmount": "decimal"
-  },
-  "fees": [{ "feeType": "string", "amount": "decimal", "frequency": "string" }],
-  "constraints": { ... }
+  "eligibility": { "minimumAge": "int", "maximumLTV": "decimal", "minimumLoanAmount": "decimal" },
+  "fees": [{ "feeType": "string", "amount": "decimal" }]
 }
 ```
 
@@ -64,26 +53,21 @@ It integrates:
   "partyId": "string",
   "partyType": "INDIVIDUAL|COMPANY|TRUST|SMSF",
   "role": "BORROWER|CO_BORROWER|GUARANTOR",
-  "personalDetails": {
-    "fullName": "string",
-    "dateOfBirth": "date",
-    "taxFileNumber": "string",
-    "driversLicence": "string"
-  },
-  "contact": { "email": "string", "mobile": "string", "address": "object" },
-  "kycStatus": { "status": "VERIFIED|PENDING", "amlChecked": "boolean" },
-  "employment": { "employerName": "string", "income": "decimal", "verified": "boolean" },
+  "personalDetails": { "fullName": "string", "dateOfBirth": "date", "taxFileNumber": "string" },
+  "contact": { "email": "string", "mobile": "string" },
+  "kycStatus": { "status": "VERIFIED|PENDING", "amlChecked": true },
+  "employment": { "employerName": "string", "annualIncome": "decimal", "verified": true },
   "financials": "FinancialSnapshot reference"
 }
 ```
 
-### 4.3 LoanApplication (Core Root – Oracle LoanApplication + LIXI2 CAL)
+### 4.3 LoanApplication (Root – Oracle + LIXI2 CAL)
 ```json
 {
   "applicationId": "string",
-  "status": "DRAFT|SUBMITTED|...|SETTLED",
+  "status": "DRAFT|IN_PROGRESS|SUBMITTED|UNDER_ASSESSMENT|VERIFIED|DECISIONED|OFFER_ISSUED|ACCEPTED|SETTLEMENT_IN_PROGRESS|SETTLED|SERVICING",
   "productId": "string",
-  "parties": [ { "partyId": "string", "role": "string" } ],
+  "parties": [{ "partyId": "string", "role": "string" }],
   "loanDetails": {
     "purpose": "PURCHASE|REFINANCE|CONSTRUCTION",
     "requestedAmount": "decimal",
@@ -91,12 +75,12 @@ It integrates:
     "interestType": "VARIABLE|FIXED",
     "repaymentFrequency": "MONTHLY|FORTNIGHTLY"
   },
-  "securities": [ { "securityId": "string" } ],
-  "documents": [ { "documentId": "string" } ],
-  "decisionRecord": "DecisionRecord reference",
-  "offerDetails": "Offer reference",
+  "securities": [{ "securityId": "string" }],
+  "documents": [{ "documentId": "string" }],
+  "decisionRecord": {},
+  "offerDetails": {},
   "channel": "BROKER|DIRECT",
-  "timestamps": { "createdAt": "datetime", "submittedAt": "datetime", "settledAt": "datetime" }
+  "timestamps": { "createdAt": "datetime", "submittedAt": "datetime" }
 }
 ```
 
@@ -105,77 +89,175 @@ It integrates:
 {
   "securityId": "string",
   "type": "RESIDENTIAL_PROPERTY",
-  "address": { "fullAddress": "string", "postcode": "string", "state": "string" },
+  "address": { "fullAddress": "string", "postcode": "string" },
   "ownership": [{ "partyId": "string", "percentage": "decimal" }],
-  "valuation": {
-    "estimatedValue": "decimal",
-    "valuerName": "string",
-    "valuationDate": "date",
-    "ltv": "decimal"
-  },
-  "titleDetails": { "titleReference": "string", "ownershipType": "string" }
+  "valuation": { "estimatedValue": "decimal", "ltv": "decimal", "valuationDate": "date" }
 }
 ```
 
-### 4.5 Supporting Entities (Summary)
-- **FinancialSnapshot**: income[], liabilities[], assets[] (LIXI2 structure)
-- **Document**: documentId, type, status, url, verificationStatus
-- **DecisionRecord**: outcome, automatedScore, reasonCodes[], manualOverrideReason
-- **Offer**: offerId, approvedAmount, interestRate, conditions[], expiryDate, accepted
-- **Valuation**, **LMIQuote**, **ConsentRecord** (CDR), **WorkflowEvent**
+Supporting entities: FinancialSnapshot, Document, DecisionRecord, Offer, Valuation, LMIQuote, ConsentRecord, WorkflowEvent.
 
-**Relationships**:
-- LoanApplication 1→N Party (roles)
+**Core Relationships**:
+- LoanApplication 1→N Party (via roles)
 - LoanApplication 1→N Security
 - LoanApplication 1→1 Product
 
-## 5. Lifecycles & State Machines
+## 5. PlantUML Diagrams
 
-### LoanApplication Main State Machine
+### 5.1 Domain Class Diagram
+```plantuml
+@startuml
+skinparam classAttributeIconSize 0
+
+class Product {
+  +productId: String
+  +name: String
+}
+
+class Party {
+  +partyId: String
+  +partyType: Enum
+  +role: Enum
+}
+
+class LoanApplication {
+  +applicationId: String
+  +status: Enum
+  +channel: Enum
+}
+
+class Security {
+  +securityId: String
+  +type: String
+  +valuation: Object
+}
+
+class Document {
+  +documentId: String
+  +status: Enum
+}
+
+LoanApplication "1" --> "1" Product
+LoanApplication "1" --> "*" Party
+LoanApplication "1" --> "*" Security
+LoanApplication "1" --> "*" Document
+@enduml
 ```
-DRAFT → IN_PROGRESS → READY_FOR_SUBMISSION → SUBMITTED → UNDER_ASSESSMENT 
-→ VERIFIED → DECISIONED → (APPROVED | DECLINED | REFERRED) 
-→ OFFER_ISSUED → ACCEPTED → SETTLEMENT_IN_PROGRESS → SETTLED → SERVICING
+
+### 5.2 LoanApplication State Machine
+```plantuml
+@startuml
+[*] --> DRAFT
+DRAFT --> IN_PROGRESS : save data
+IN_PROGRESS --> READY_FOR_SUBMISSION : validation pass
+READY_FOR_SUBMISSION --> SUBMITTED : submit
+SUBMITTED --> UNDER_ASSESSMENT : start checks
+UNDER_ASSESSMENT --> VERIFIED : complete verification
+VERIFIED --> DECISIONED : run rules
+DECISIONED --> APPROVED : approved
+APPROVED --> OFFER_ISSUED : issue offer
+OFFER_ISSUED --> ACCEPTED : accept
+ACCEPTED --> SETTLEMENT_IN_PROGRESS : settlement
+SETTLEMENT_IN_PROGRESS --> SETTLED : funded
+SETTLED --> SERVICING
+@enduml
 ```
 
-**Example Triggers** (Oracle FAC style):
-- `RPM_FA_LO_APP_ENTRY` → DRAFT to IN_PROGRESS
-- `RPM_FA_LO_APP_ASSESSMENT` → UNDER_ASSESSMENT
-- `RPM_FA_LO_ACC_APPRVL` → Decisioned → Approved
+### 5.3 Sequence Diagram: Broker Application Submission (LIXI2 Flow)
+```plantuml
+@startuml
+actor Broker
+participant "Aggregator / Broker Portal" as BrokerPortal
+participant "LIXI2 Adapter" as Adapter
+participant "Oracle Banking Platform (OBP)" as OBP
+participant "Credit Bureau" as Bureau
 
-Other machines: Party, Security, Document (as in previous version).
+Broker -> BrokerPortal: Submit Application (LIXI2 JSON/XML)
+BrokerPortal -> Adapter: Forward LIXI2 CAL message
+Adapter -> OBP: Transform & Call Create/Update LoanApplication API
+OBP -> OBP: Validate & Create LoanApplication (status = SUBMITTED)
+OBP -> Bureau: Request Credit Report (async)
+Bureau --> OBP: Credit Response
+OBP --> Adapter: Application Accepted + applicationId
+Adapter --> BrokerPortal: LIXI2 Acknowledgement
+BrokerPortal --> Broker: Submission Confirmed
 
-## 6. Domain Events (Expanded)
-- `LoanApplicationCreated` {applicationId, partyIds, amount}
-- `LoanApplicationSubmitted` {applicationId, channel}
-- `ApplicationAssessed` {applicationId, creditScore, ltv}
-- `ValuationReceived` {applicationId, securityId, value}
-- `CreditDecisionMade` {applicationId, outcome, reasons}
-- `OfferIssued`, `OfferAccepted`, `SettlementCompleted`, `LIXI2MessageReceived`, etc.
+note right
+  Oracle FAC: RPM_FA_LO_APP_ENTRY + RPM_FA_LO_APP_SUBMIT
+end note
+@enduml
+```
 
-All events carry `applicationId`, `timestamp`, `actor` (USER|SYSTEM|BROKER), and relevant delta.
+### 5.4 Sequence Diagram: Digital Direct Application Flow
+```plantuml
+@startuml
+actor Customer
+participant "Westpac App / Website" as DigitalChannel
+participant "Oracle Banking Platform (OBP)" as OBP
+participant "External Services" as External
 
-## 7. Integration Requirements
-- Inbound: LIXI2 CAL JSON/XML → transformation service → LoanApplication
-- Outbound: LIXI2 settlement instructions to lawyers
-- Product: Real-time consumption of CDR `/products`
-- External adapters for credit bureaus, valuers, LMI
+Customer -> DigitalChannel: Start Application + Enter Details
+DigitalChannel -> OBP: POST /loanapplication (initiate + enrich)
+OBP -> OBP: Create LoanApplication (status = IN_PROGRESS)
+OBP -> External: Call Credit Bureau + Valuation Service (parallel)
+External --> OBP: Responses
+OBP -> DigitalChannel: Return Application Status + Next Steps
+DigitalChannel --> Customer: Show Progress / Required Documents
 
-## 8. Non-Functional Requirements
+note right
+  Uses Oracle Banking Origination APIs directly
+end note
+@enduml
+```
+
+### 5.5 Sequence Diagram: Assessment & Decisioning
+```plantuml
+@startuml
+participant "LoanApplication Service" as AppService
+participant "Rules Engine" as Rules
+participant "Credit Decision Service" as Decision
+participant "Underwriter (Manual)" as UW
+
+AppService -> Rules: Run Automated Assessment
+Rules --> AppService: Preliminary Result
+AppService -> Decision: Request Final Decision
+Decision -> Decision: Score + Policy Check
+alt Automated Approval
+  Decision --> AppService: APPROVED
+else Manual Review Required
+  Decision --> UW: Escalate for Review
+  UW --> Decision: Manual Decision (Approve/Decline)
+end
+Decision --> AppService: Final Outcome
+AppService -> AppService: Update status + emit CreditDecisionMade event
+@enduml
+```
+
+## 6. Domain Events
+- LoanApplicationCreated
+- LoanApplicationSubmitted
+- ApplicationAssessed
+- ValuationReceived
+- CreditDecisionMade
+- OfferIssued
+- OfferAccepted
+- SettlementCompleted
+- LIXI2MessageReceived / Sent
+
+## 7. Integration & Non-Functional Requirements
+- Inbound LIXI2 transformation layer
+- Real-time CDR Product consumption
 - Full audit trail on every state change
 - Straight-through processing target: <30s for simple cases
-- Oracle-style extensibility points for Australian rules
-- Compliance with responsible lending and CDR consent
+- Oracle-style extensibility points
 
-## 9. Next Steps for Claude
-Generate:
-- Detailed ERD + PostgreSQL schema (with Oracle compatibility)
-- Full Swagger/OpenAPI for all origination endpoints (mirroring Oracle Banking APIs)
-- State machine code (XState / Temporal)
-- Microservices breakdown including LIXI2 transformation layer
-- Event-driven architecture (Kafka-style)
+## 8. Next Steps for Claude
+Use the diagrams + data models to generate:
+- Detailed ERD / PostgreSQL schema
+- Full Swagger/OpenAPI contracts mirroring Oracle Banking APIs
+- Executable state machine code
+- Microservices architecture with LIXI2 adapter
+- Event-driven backbone
 
----
-
-**End of Document – Version 1.1 Expanded**
+**End of Document – Version 1.3**
 ```
