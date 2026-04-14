@@ -225,85 +225,7 @@
         .console .line-fail { color: var(--red); }
         .console .line-info { color: var(--accent); }
 
-        /* Walkthrough Tab */
-        .walkthrough {
-            display: grid;
-            grid-template-rows: auto auto 1fr;
-            height: 100%;
-            overflow: hidden;
-        }
-
-        .state-diagram {
-            background: var(--bg-secondary);
-            border-bottom: 1px solid var(--border);
-            padding: 16px 24px;
-            overflow-x: auto;
-        }
-
-        .state-flow {
-            display: flex;
-            align-items: center;
-            gap: 4px;
-            min-width: max-content;
-            padding: 4px 0;
-        }
-
-        .state-node {
-            padding: 6px 10px;
-            border-radius: 6px;
-            font-size: 10px;
-            font-weight: 600;
-            white-space: nowrap;
-            border: 1.5px solid var(--border);
-            color: var(--text-muted);
-            background: var(--bg-primary);
-            transition: all 0.3s;
-        }
-
-        .state-node.completed {
-            border-color: var(--green);
-            color: var(--green);
-            background: rgba(6, 214, 160, 0.08);
-        }
-
-        .state-node.current {
-            border-color: var(--accent);
-            color: var(--accent);
-            background: rgba(67, 97, 238, 0.15);
-            box-shadow: 0 0 12px rgba(67, 97, 238, 0.3);
-            animation: glow 2s ease-in-out infinite;
-        }
-
-        @keyframes glow {
-            0%, 100% { box-shadow: 0 0 8px rgba(67, 97, 238, 0.2); }
-            50% { box-shadow: 0 0 16px rgba(67, 97, 238, 0.4); }
-        }
-
-        .state-arrow {
-            color: var(--text-muted);
-            font-size: 12px;
-            flex-shrink: 0;
-        }
-
-        .state-arrow.completed { color: var(--green); }
-
-        .step-controls {
-            background: var(--bg-secondary);
-            border-bottom: 1px solid var(--border);
-            padding: 12px 24px;
-            display: flex;
-            align-items: center;
-            gap: 16px;
-        }
-
-        .step-counter {
-            color: var(--text-muted);
-            font-size: 12px;
-            min-width: 120px;
-        }
-
-        .step-counter strong { color: var(--text-primary); }
-
+        /* Stepper */
         .stepper {
             display: flex;
             align-items: center;
@@ -332,6 +254,7 @@
         .step-line { width: 12px; height: 1.5px; background: var(--border); }
         .step-line.done { background: var(--green); }
 
+        /* Walkthrough Detail Panes */
         .walkthrough-detail {
             display: grid;
             grid-template-columns: 1fr 1fr;
@@ -409,6 +332,18 @@
             color: var(--text-secondary);
             line-height: 1.6;
         }
+
+        /* Walkthrough complete banner */
+        .complete-banner {
+            background: rgba(6, 214, 160, 0.1);
+            border: 1px solid var(--green);
+            border-radius: 8px;
+            padding: 16px;
+            margin: 12px 0;
+            text-align: center;
+        }
+
+        .complete-banner h3 { color: var(--green); margin-bottom: 4px; }
 
         /* Data Inspector Tab */
         .inspector {
@@ -514,17 +449,130 @@
         ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
         ::-webkit-scrollbar-thumb:hover { background: #3a3a5a; }
 
-        /* Walkthrough complete banner */
-        .complete-banner {
-            background: rgba(6, 214, 160, 0.1);
-            border: 1px solid var(--green);
-            border-radius: 8px;
-            padding: 16px;
-            margin: 12px 0;
-            text-align: center;
+        /* Lifecycle Explorer */
+        .lifecycle-explorer {
+            display: grid;
+            grid-template-rows: auto minmax(200px, 2fr) auto minmax(120px, 1fr);
+            height: 100%;
+            overflow: hidden;
+        }
+        .explorer-status-bar {
+            background: var(--bg-secondary);
+            border-bottom: 1px solid var(--border);
+            padding: 10px 24px;
+            font-size: 12px;
+            color: var(--text-secondary);
+            display: flex;
+            align-items: center;
+            gap: 4px;
+        }
+        .explorer-status-bar strong { color: var(--text-primary); }
+        .explorer-status-bar .status-state { color: var(--accent); font-weight: 600; }
+        .explorer-status-bar .status-sep { color: var(--text-muted); margin: 0 4px; }
+        #viewingIndicator { color: var(--yellow); font-style: italic; }
+
+        .explorer-diagram {
+            background: var(--bg-secondary);
+            border-bottom: 1px solid var(--border);
+            padding: 8px;
+            overflow: hidden;
+            min-height: 0;
+            position: relative;
+        }
+        #explorerSvg { width: 100%; height: 100%; display: block; }
+
+        .transport-bar {
+            background: var(--bg-secondary);
+            border-bottom: 1px solid var(--border);
+            padding: 10px 24px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+        .transport-btn {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            color: var(--text-secondary);
+            padding: 6px 14px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-family: var(--mono);
+            font-size: 11px;
+            transition: all 0.15s;
+        }
+        .transport-btn:hover:not(:disabled) { border-color: var(--accent); color: var(--text-primary); }
+        .transport-btn:disabled { opacity: 0.4; cursor: not-allowed; }
+
+        .auto-btn {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            color: var(--text-secondary);
+            padding: 6px 14px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-family: var(--mono);
+            font-size: 11px;
+            transition: all 0.15s;
+        }
+        .auto-btn:hover { border-color: var(--accent); color: var(--text-primary); }
+        .auto-btn.active { background: rgba(67,97,238,0.15); border-color: var(--accent); color: var(--accent); }
+
+        .diagram-toggle-btn {
+            background: var(--bg-card); border: 1px solid var(--border); color: var(--text-secondary);
+            padding: 4px 12px; border-radius: 4px; cursor: pointer;
+            font-family: var(--mono); font-size: 10px; transition: all 0.15s;
+        }
+        .diagram-toggle-btn:hover { border-color: var(--accent); color: var(--text-primary); }
+        .diagram-toggle-btn.active { background: rgba(67,97,238,0.15); border-color: var(--accent); color: var(--accent); }
+
+        /* SVG Node States */
+        .sm-node { cursor: pointer; }
+        .sm-node rect, .sm-node polygon { transition: fill 0.3s, stroke 0.3s; }
+        .sm-node text { pointer-events: none; }
+        .sm-node.completed rect, .sm-node.completed polygon { fill: rgba(6,214,160,0.15); stroke: #06d6a0; stroke-width: 2; }
+        .sm-node.completed text { fill: #06d6a0; }
+        .sm-node.current rect, .sm-node.current polygon { fill: rgba(67,97,238,0.2); stroke: #4361ee; stroke-width: 2.5; }
+        .sm-node.current text { fill: #4361ee; }
+        .sm-node.next-available rect, .sm-node.next-available polygon { stroke: #ffffff; stroke-width: 2; }
+        .sm-node.next-available text { fill: #ffffff; }
+        .sm-node.future { opacity: 0.4; }
+        .sm-node.unreachable { opacity: 0.2; }
+        .sm-node.viewing rect, .sm-node.viewing polygon { stroke: #ffd166; stroke-width: 2.5; }
+
+        @keyframes nodeBreathing {
+            0%, 100% { filter: drop-shadow(0 0 4px rgba(67,97,238,0.3)); }
+            50% { filter: drop-shadow(0 0 10px rgba(67,97,238,0.6)); }
+        }
+        .sm-node.current { animation: nodeBreathing 2s ease-in-out infinite; }
+
+        @keyframes ringPulse {
+            0%, 100% { opacity: 0.6; }
+            50% { opacity: 1; }
+        }
+        .sm-node.next-available { animation: ringPulse 1.5s ease-in-out infinite; }
+
+        @keyframes nodeShake {
+            0%, 100% { transform: translateX(0); }
+            20%, 60% { transform: translateX(-3px); }
+            40%, 80% { transform: translateX(3px); }
+        }
+        .sm-node.shake { animation: nodeShake 0.4s ease-in-out; }
+
+        @media (prefers-reduced-motion: reduce) {
+            .sm-node.current, .sm-node.next-available { animation: none; }
+            .sm-node.shake { animation: none; }
         }
 
-        .complete-banner h3 { color: var(--green); margin-bottom: 4px; }
+        .state-tooltip {
+            position: fixed; background: var(--bg-card); border: 1px solid var(--border);
+            border-radius: 6px; padding: 8px 12px; font-size: 10px; color: var(--text-primary);
+            z-index: 100; pointer-events: none; white-space: nowrap;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.3); line-height: 1.6;
+            font-family: var(--mono);
+        }
+        .state-tooltip .tooltip-title { font-weight: 600; margin-bottom: 4px; color: var(--accent); }
+        .state-tooltip .tooltip-transition { color: var(--text-secondary); }
+        .state-tooltip .tooltip-transition .arrow { color: var(--text-muted); }
     </style>
 </head>
 <body>
@@ -535,7 +583,7 @@
 
     <nav>
         <button class="tab-btn active" data-tab="tests">Test Runner</button>
-        <button class="tab-btn" data-tab="walkthrough">Lifecycle Walkthrough</button>
+        <button class="tab-btn" data-tab="walkthrough">Lifecycle Explorer</button>
         <button class="tab-btn" data-tab="inspector">Data Inspector</button>
     </nav>
 
@@ -568,35 +616,35 @@
             </div>
         </div>
 
-        <!-- Tab 2: Lifecycle Walkthrough -->
+        <!-- Tab 2: Lifecycle Explorer -->
         <div id="walkthrough" class="tab-content">
-            <div class="walkthrough" id="walkthroughContainer">
-                <div class="state-diagram">
-                    <div class="state-flow" id="stateFlow"></div>
+            <div class="lifecycle-explorer" id="walkthroughContainer">
+                <div class="explorer-status-bar" id="explorerStatusBar">
+                    Step <strong id="currentStepNum">0</strong> of <strong>14</strong>
+                    <span class="status-sep">&middot;</span>
+                    <span id="statusStepName">Ready</span>
+                    <span class="status-sep">&middot;</span>
+                    <span id="statusStateName" class="status-state"></span>
+                    <span id="viewingIndicator" style="display:none">&nbsp;(viewing step <span id="viewingStepNum"></span>)</span>
                 </div>
-                <div class="step-controls">
-                    <div class="step-counter">
-                        Step <strong id="currentStepNum">0</strong> of <strong>14</strong>
-                    </div>
+                <div class="explorer-diagram" id="explorerDiagramWrap">
+                    <svg id="explorerSvg" viewBox="0 0 1200 660" preserveAspectRatio="xMidYMid meet"></svg>
+                </div>
+                <div class="transport-bar">
+                    <button class="transport-btn" id="transportBack" onclick="transportBack()" disabled>&#9664; Back</button>
                     <div class="stepper" id="stepper"></div>
-                    <button class="btn" id="walkthroughBtn" onclick="walkthroughAction()">Start Walkthrough</button>
+                    <button class="btn" id="walkthroughBtn" onclick="transportNext()">Start Walkthrough</button>
+                    <button class="auto-btn" id="autoPlayBtn" onclick="toggleAutoPlay()">Auto</button>
+                    <button class="diagram-toggle-btn" id="diagramToggle" onclick="toggleDiagramView()">Show All Paths</button>
                 </div>
                 <div class="walkthrough-detail">
                     <div class="detail-pane" id="requestPane">
                         <div class="pane-title">API Request</div>
-                        <div id="requestContent">
-                            <div class="empty-state" style="height: 300px">
-                                <p>Click "Start Walkthrough" to begin</p>
-                            </div>
-                        </div>
+                        <div id="requestContent"><div class="empty-state" style="height:300px"><p>Click "Start Walkthrough" to begin</p></div></div>
                     </div>
                     <div class="detail-pane" id="responsePane">
                         <div class="pane-title">Response / State</div>
-                        <div id="responseContent">
-                            <div class="empty-state" style="height: 300px">
-                                <p>Response data will appear here</p>
-                            </div>
-                        </div>
+                        <div id="responseContent"><div class="empty-state" style="height:300px"><p>Response data will appear here</p></div></div>
                     </div>
                 </div>
             </div>
@@ -650,6 +698,138 @@
         'Run Decision', 'Generate Offer', 'Accept Offer',
         'Begin Settlement', 'Complete Settlement'
     ];
+
+    // ==================== State Machine Data ====================
+    const STATE_TRANSITIONS = {
+        DRAFT:                  { happy: ['IN_PROGRESS'],            exits: ['WITHDRAWN'] },
+        IN_PROGRESS:            { happy: ['READY_FOR_SUBMISSION'],   exits: ['WITHDRAWN'] },
+        READY_FOR_SUBMISSION:   { happy: ['SUBMITTED'],              exits: [], back: ['IN_PROGRESS'] },
+        SUBMITTED:              { happy: ['UNDER_ASSESSMENT'],       exits: ['WITHDRAWN'] },
+        UNDER_ASSESSMENT:       { happy: ['VERIFIED'],               exits: ['DECLINED', 'WITHDRAWN'] },
+        VERIFIED:               { happy: ['DECISIONED'],             exits: [] },
+        DECISIONED:             { happy: ['APPROVED'],               exits: ['DECLINED'], branch: ['CONDITIONALLY_APPROVED'] },
+        CONDITIONALLY_APPROVED: { happy: ['APPROVED'],               exits: ['DECLINED', 'WITHDRAWN'] },
+        APPROVED:               { happy: ['OFFER_ISSUED'],           exits: [] },
+        OFFER_ISSUED:           { happy: ['OFFER_ACCEPTED'],         exits: ['LAPSED', 'WITHDRAWN'] },
+        OFFER_ACCEPTED:         { happy: ['SETTLEMENT_IN_PROGRESS'], exits: [] },
+        SETTLEMENT_IN_PROGRESS: { happy: ['SETTLED'],                exits: ['WITHDRAWN'] },
+    };
+
+    const EXIT_SOURCES = {
+        WITHDRAWN: ['DRAFT','IN_PROGRESS','SUBMITTED','UNDER_ASSESSMENT','CONDITIONALLY_APPROVED','OFFER_ISSUED','SETTLEMENT_IN_PROGRESS'],
+        DECLINED:  ['UNDER_ASSESSMENT','DECISIONED','CONDITIONALLY_APPROVED'],
+        LAPSED:    ['OFFER_ISSUED'],
+    };
+
+    const HAPPY_PATH_STATES = ALL_STATES;
+    const BRANCH_STATES = ['CONDITIONALLY_APPROVED'];
+    const EXIT_STATES = ['WITHDRAWN', 'DECLINED', 'LAPSED'];
+    const ALL_STATES_FULL = [...ALL_STATES, ...BRANCH_STATES, ...EXIT_STATES];
+
+    function computeReachableStates(currentState, completedStates) {
+        const reachable = new Set();
+        const unreachable = new Set();
+
+        if (!currentState) {
+            ALL_STATES_FULL.forEach(s => {
+                if (!completedStates.includes(s)) reachable.add(s);
+            });
+            return { reachable, unreachable };
+        }
+
+        // BFS from current state
+        const visited = new Set();
+        const queue = [currentState];
+        visited.add(currentState);
+
+        while (queue.length > 0) {
+            const state = queue.shift();
+            const transitions = STATE_TRANSITIONS[state];
+            if (!transitions) continue;
+
+            const allNext = [
+                ...(transitions.happy || []),
+                ...(transitions.exits || []),
+                ...(transitions.branch || []),
+                ...(transitions.back || [])
+            ];
+
+            for (const next of allNext) {
+                if (!visited.has(next)) {
+                    visited.add(next);
+                    reachable.add(next);
+                    queue.push(next);
+                }
+            }
+        }
+
+        ALL_STATES_FULL.forEach(s => {
+            if (s !== currentState && !completedStates.includes(s) && !reachable.has(s)) {
+                unreachable.add(s);
+            }
+        });
+
+        return { reachable, unreachable };
+    }
+
+    // ==================== SVG State Machine Data (global) ====================
+    const smStates = {
+        DRAFT:                  { x: 100,  y: 80,  type: 'happy' },
+        IN_PROGRESS:            { x: 280,  y: 80,  type: 'happy' },
+        READY_FOR_SUBMISSION:   { x: 480,  y: 80,  type: 'happy' },
+        SUBMITTED:              { x: 680,  y: 80,  type: 'happy' },
+        UNDER_ASSESSMENT:       { x: 880,  y: 80,  type: 'happy' },
+        VERIFIED:               { x: 1080, y: 80,  type: 'happy' },
+        DECISIONED:             { x: 200,  y: 220, type: 'diamond' },
+        CONDITIONALLY_APPROVED: { x: 500,  y: 340, type: 'branch' },
+        APPROVED:               { x: 500,  y: 220, type: 'happy' },
+        OFFER_ISSUED:           { x: 700,  y: 220, type: 'happy' },
+        OFFER_ACCEPTED:         { x: 900,  y: 220, type: 'happy' },
+        SETTLEMENT_IN_PROGRESS: { x: 1080, y: 220, type: 'happy' },
+        SETTLED:                { x: 1080, y: 370, type: 'terminal-ok' },
+        WITHDRAWN:              { x: 200,  y: 520, type: 'exit-w' },
+        DECLINED:               { x: 550,  y: 520, type: 'exit-d' },
+        LAPSED:                 { x: 850,  y: 520, type: 'exit-l' },
+    };
+
+    const smTransitions = [
+        { from: 'DRAFT', to: 'IN_PROGRESS', label: 'save data', type: 'happy' },
+        { from: 'IN_PROGRESS', to: 'READY_FOR_SUBMISSION', label: 'validation pass', type: 'happy' },
+        { from: 'READY_FOR_SUBMISSION', to: 'SUBMITTED', label: 'submit', type: 'happy' },
+        { from: 'SUBMITTED', to: 'UNDER_ASSESSMENT', label: 'assessor picks up', type: 'happy' },
+        { from: 'UNDER_ASSESSMENT', to: 'VERIFIED', label: 'verification complete', type: 'happy' },
+        { from: 'VERIFIED', to: 'DECISIONED', label: 'rules engine', type: 'happy' },
+        { from: 'DECISIONED', to: 'APPROVED', label: 'approve', type: 'happy' },
+        { from: 'APPROVED', to: 'OFFER_ISSUED', label: 'generate offer', type: 'happy' },
+        { from: 'OFFER_ISSUED', to: 'OFFER_ACCEPTED', label: 'borrower accepts', type: 'happy' },
+        { from: 'OFFER_ACCEPTED', to: 'SETTLEMENT_IN_PROGRESS', label: 'begin settlement', type: 'happy' },
+        { from: 'SETTLEMENT_IN_PROGRESS', to: 'SETTLED', label: 'funds disbursed', type: 'happy' },
+        { from: 'DECISIONED', to: 'CONDITIONALLY_APPROVED', label: 'conditions', type: 'branch' },
+        { from: 'CONDITIONALLY_APPROVED', to: 'APPROVED', label: 'conditions met', type: 'branch' },
+        { from: 'READY_FOR_SUBMISSION', to: 'IN_PROGRESS', label: 'edit / re-validate', type: 'back' },
+        { from: 'DRAFT', to: 'WITHDRAWN', label: '', type: 'exit' },
+        { from: 'IN_PROGRESS', to: 'WITHDRAWN', label: '', type: 'exit' },
+        { from: 'SUBMITTED', to: 'WITHDRAWN', label: '', type: 'exit' },
+        { from: 'UNDER_ASSESSMENT', to: 'WITHDRAWN', label: '', type: 'exit' },
+        { from: 'UNDER_ASSESSMENT', to: 'DECLINED', label: 'fail checks', type: 'exit' },
+        { from: 'CONDITIONALLY_APPROVED', to: 'WITHDRAWN', label: '', type: 'exit' },
+        { from: 'CONDITIONALLY_APPROVED', to: 'DECLINED', label: 'conditions not met', type: 'exit' },
+        { from: 'DECISIONED', to: 'DECLINED', label: 'fail policy', type: 'exit' },
+        { from: 'OFFER_ISSUED', to: 'WITHDRAWN', label: '', type: 'exit' },
+        { from: 'OFFER_ISSUED', to: 'LAPSED', label: '30-day expiry', type: 'exit' },
+        { from: 'SETTLEMENT_IN_PROGRESS', to: 'WITHDRAWN', label: 'falls through', type: 'exit' },
+    ];
+
+    // ==================== Walkthrough Step-State Mappings ====================
+    const STATE_TO_STEPS = {
+        DRAFT: [1,2,3,4], SUBMITTED: [5], UNDER_ASSESSMENT: [6,7],
+        VERIFIED: [8,9], APPROVED: [10], OFFER_ISSUED: [11],
+        OFFER_ACCEPTED: [12], SETTLEMENT_IN_PROGRESS: [13], SETTLED: [14]
+    };
+    const STEP_TO_STATE = {};
+    for (const [state, steps] of Object.entries(STATE_TO_STEPS)) {
+        for (const s of steps) STEP_TO_STATE[s] = state;
+    }
 
     // ==================== Test Runner ====================
     let testCatalog = [];
@@ -840,53 +1020,357 @@
         }
     }
 
-    // ==================== Walkthrough ====================
+    // ==================== Walkthrough State ====================
     let walkthroughState = {
-        sessionId: null,
-        currentStep: 0,
-        started: false,
-        complete: false,
-        completedStates: [],
-        currentState: null
+        sessionId: null, currentStep: 0, viewingStep: 0,
+        started: false, complete: false,
+        completedStates: [], currentState: null,
+        history: [], autoPlaying: false, autoPlayTimer: null
     };
 
-    function initStateFlow() {
-        const container = document.getElementById('stateFlow');
-        container.innerHTML = ALL_STATES.map((state, i) => {
-            const arrow = i < ALL_STATES.length - 1 ? '<span class="state-arrow">\u2192</span>' : '';
-            const label = state.replace(/_/g, ' ');
-            return `<span class="state-node" id="state-${state}">${label}</span>${arrow}`;
-        }).join('');
+    // ==================== Explorer Diagram ====================
+    function initExplorerDiagram() {
+        const svg = document.getElementById('explorerSvg');
+        if (!svg) return;
+        svg.innerHTML = '';
+
+        const nW = 140, nH = 36, rr = 6;
+
+        function eStyle(t) {
+            return { happy: { stroke:'#06d6a0',dash:'',width:2,opacity:0.9 },
+                     branch:{ stroke:'#ffd166',dash:'6,4',width:1.8,opacity:0.8 },
+                     exit:  { stroke:'#ef476f',dash:'3,3',width:1.2,opacity:0.5 },
+                     back:  { stroke:'#6a6a80',dash:'6,3',width:1.2,opacity:0.5 } }[t];
+        }
+        function nStyle(t) {
+            return { happy:      { fill:'#1e2a4a',stroke:'#06d6a0',text:'#06d6a0',dash:'' },
+                     diamond:    { fill:'#1e2a4a',stroke:'#ffd166',text:'#ffd166',dash:'' },
+                     branch:     { fill:'#1e2a4a',stroke:'#b8860b',text:'#b8860b',dash:'4,3' },
+                     'exit-w':   { fill:'#1e2a4a',stroke:'#f77f00',text:'#f77f00',dash:'4,3' },
+                     'exit-d':   { fill:'#1e2a4a',stroke:'#ef476f',text:'#ef476f',dash:'4,3' },
+                     'exit-l':   { fill:'#1e2a4a',stroke:'#ffd166',text:'#ffd166',dash:'4,3' },
+                     'terminal-ok':{ fill:'#06d6a0',stroke:'#06d6a0',text:'#1a1a2e',dash:'' } }[t];
+        }
+        function mk(tag, attrs, parent) {
+            const e = document.createElementNS('http://www.w3.org/2000/svg', tag);
+            for (const [k,v] of Object.entries(attrs)) e.setAttribute(k, v);
+            if (parent) parent.appendChild(e);
+            return e;
+        }
+
+        // Arrowhead markers
+        const defs = mk('defs', {}, svg);
+        ['happy','branch','exit','back'].forEach(type => {
+            const s = eStyle(type);
+            const marker = mk('marker', { id:'sm-arrow-'+type, viewBox:'0 0 10 6', refX:'10', refY:'3', markerWidth:'8', markerHeight:'6', orient:'auto-start-reverse', fill:s.stroke }, defs);
+            mk('path', { d:'M 0 0 L 10 3 L 0 6 z' }, marker);
+        });
+
+        // Edges
+        const edgeG = mk('g', {}, svg);
+        smTransitions.forEach(t => {
+            const from = smStates[t.from], to = smStates[t.to];
+            const s = eStyle(t.type);
+            let x1,y1,x2,y2;
+            const dx = to.x-from.x, dy = to.y-from.y;
+
+            const isExitBranchBack = (t.type === 'exit' || t.type === 'branch' || t.type === 'back');
+
+            if (Math.abs(dx) > Math.abs(dy) && dy < nH) {
+                if (dx > 0) { x1=from.x+nW/2;y1=from.y;x2=to.x-nW/2;y2=to.y; }
+                else { x1=from.x-nW/2;y1=from.y;x2=to.x+nW/2;y2=to.y; }
+            } else {
+                if (dy > 0) { x1=from.x;y1=from.y+nH/2;x2=to.x;y2=to.y-nH/2; }
+                else { x1=from.x;y1=from.y-nH/2;x2=to.x;y2=to.y+nH/2; }
+            }
+
+            // Back-track curve above
+            if (t.from==='READY_FOR_SUBMISSION'&&t.to==='IN_PROGRESS') {
+                x1=from.x;y1=from.y-nH/2;x2=to.x;y2=to.y-nH/2;
+                const p=`M ${x1} ${y1} C ${x1} ${y1-35}, ${x2} ${y2-35}, ${x2} ${y2}`;
+                // Wrap in group for exit/branch/back toggling
+                const edgeWrap = mk('g', {}, edgeG);
+                if (isExitBranchBack) {
+                    edgeWrap.setAttribute('data-exit', 'true');
+                    edgeWrap.style.display = 'none';
+                }
+                const path = mk('path',{d:p,fill:'none',stroke:s.stroke,'stroke-width':s.width,'stroke-dasharray':s.dash,opacity:s.opacity,'marker-end':'url(#sm-arrow-'+t.type+')'},edgeWrap);
+                path.setAttribute('id', 'edge-' + t.from + '-' + t.to);
+                path.setAttribute('class', 'sm-edge');
+                path.setAttribute('data-edge-type', t.type);
+                if(t.label) mk('text',{x:(x1+x2)/2,y:Math.min(y1,y2)-39,fill:s.stroke,'font-size':'9','text-anchor':'middle','font-family':'inherit',opacity:'0.7'},edgeWrap).textContent=t.label;
+                return;
+            }
+            if (t.type==='exit') { x1=from.x;y1=from.y+nH/2;x2=to.x;y2=to.y-nH/2; }
+            if (t.from==='VERIFIED'&&t.to==='DECISIONED') { x1=from.x;y1=from.y+nH/2;x2=to.x;y2=to.y-nH/2; }
+            if (t.from==='CONDITIONALLY_APPROVED'&&t.to==='APPROVED') { x1=from.x;y1=from.y-nH/2;x2=to.x;y2=to.y+nH/2; }
+            if (t.from==='SETTLEMENT_IN_PROGRESS'&&t.to==='SETTLED') { x1=from.x;y1=from.y+nH/2;x2=to.x;y2=to.y-nH/2; }
+
+            const mx=(x1+x2)/2,my=(y1+y2)/2;
+            let c1x,c1y,c2x,c2y;
+            if (Math.abs(x2-x1)<10) { c1x=x1;c1y=my;c2x=x2;c2y=my; }
+            else if (Math.abs(y2-y1)<10) { c1x=mx;c1y=y1;c2x=mx;c2y=y2; }
+            else { c1x=x1;c1y=my;c2x=x2;c2y=my; }
+
+            // Wrap edge path + label text in a <g>
+            const edgeWrap = mk('g', {}, edgeG);
+            if (isExitBranchBack) {
+                edgeWrap.setAttribute('data-exit', 'true');
+                edgeWrap.style.display = 'none';
+            }
+
+            const path = mk('path',{d:'M '+x1+' '+y1+' C '+c1x+' '+c1y+', '+c2x+' '+c2y+', '+x2+' '+y2,fill:'none',stroke:s.stroke,'stroke-width':s.width,'stroke-dasharray':s.dash,opacity:s.opacity,'marker-end':'url(#sm-arrow-'+t.type+')'},edgeWrap);
+            path.setAttribute('id', 'edge-' + t.from + '-' + t.to);
+            path.setAttribute('class', 'sm-edge');
+            path.setAttribute('data-edge-type', t.type);
+
+            if(t.label){mk('text',{x:mx+(t.type==='exit'?8:0),y:my-5,fill:s.stroke,'font-size':'9','text-anchor':'middle','font-family':'inherit',opacity:'0.7'},edgeWrap).textContent=t.label;}
+        });
+
+        // Nodes
+        const nodeG = mk('g', {}, svg);
+        const icons = { WITHDRAWN:'\u2298 ',DECLINED:'\u2717 ',LAPSED:'\u23F1 ',SETTLED:'\u2713 ',DECISIONED:'\u25C7 ',CONDITIONALLY_APPROVED:'\u25C6 ' };
+        for (const [id,pos] of Object.entries(smStates)) {
+            const s = nStyle(pos.type);
+            const isExitBranch = ['WITHDRAWN','DECLINED','LAPSED','CONDITIONALLY_APPROVED'].includes(id);
+
+            const g = document.createElementNS('http://www.w3.org/2000/svg', 'g');
+            g.setAttribute('class', 'sm-node');
+            g.setAttribute('id', 'state-' + id);
+            g.addEventListener('click', () => onNodeClick(id));
+            g.addEventListener('mouseenter', (e) => showStateTooltip(id, e));
+            g.addEventListener('mouseleave', () => hideStateTooltip());
+
+            if (isExitBranch) {
+                g.setAttribute('data-exit', 'true');
+                g.style.display = 'none';
+            }
+
+            if (pos.type==='diamond') {
+                const dw=nW/2+8, dh=nH/2+8;
+                mk('polygon',{points:pos.x+','+(pos.y-dh)+' '+(pos.x+dw)+','+pos.y+' '+pos.x+','+(pos.y+dh)+' '+(pos.x-dw)+','+pos.y,fill:s.fill,stroke:s.stroke,'stroke-width':'2'},g);
+            } else {
+                mk('rect',{x:pos.x-nW/2,y:pos.y-nH/2,width:nW,height:nH,rx:rr,fill:s.fill,stroke:s.stroke,'stroke-width':'1.5','stroke-dasharray':s.dash},g);
+            }
+            const lbl = (icons[id]||'')+id.replace(/_/g,' ');
+            const display = lbl.length>22?lbl.substring(0,20)+'\u2026':lbl;
+            const fs = ['CONDITIONALLY_APPROVED','READY_FOR_SUBMISSION','SETTLEMENT_IN_PROGRESS'].includes(id)?'8.5':'9.5';
+            mk('text',{x:pos.x,y:pos.y+4,fill:s.text,'font-size':fs,'text-anchor':'middle','font-family':'inherit','font-weight':'600'},g).textContent=display;
+
+            nodeG.appendChild(g);
+        }
+
+        // Zone labels
+        const lblG = mk('g', {}, svg);
+        [{x:20,y:20,c:'#4361ee',t:'HAPPY PATH'},{x:20,y:248,c:'#ffd166',t:'DECISIONING'},{x:20,y:370,c:'#b8860b',t:'CONDITIONAL BRANCH'},{x:20,y:490,c:'#ef476f',t:'EXIT STATES'}].forEach(l=>{
+            mk('text',{x:l.x,y:l.y,fill:l.c,'font-size':'10','font-family':'inherit','font-weight':'600',opacity:'0.6'},lblG).textContent=l.t;
+        });
+        [{y:145},{y:430}].forEach(function(obj){mk('line',{x1:20,y1:obj.y,x2:1200-20,y2:obj.y,stroke:'#2a2a4a','stroke-width':'0.5','stroke-dasharray':'4,4'},lblG);});
+        [{id:'WITHDRAWN',y:565},{id:'DECLINED',y:565},{id:'LAPSED',y:565},{id:'SETTLED',y:405}].forEach(function(obj){
+            mk('text',{x:smStates[obj.id].x,y:obj.y,fill:'#6a6a80','font-size':'8','text-anchor':'middle','font-family':'inherit','font-style':'italic'},lblG).textContent='terminal';
+        });
+
+        // Legend
+        const legendG = mk('g', {}, svg);
+        const legendItems = [
+            {x:400,stroke:'#06d6a0',dash:'',label:'Happy path'},
+            {x:540,stroke:'#ffd166',dash:'6,4',label:'Branch (conditional)'},
+            {x:730,stroke:'#ef476f',dash:'3,3',label:'Exit / terminal'},
+            {x:890,stroke:'#6a6a80',dash:'6,3',label:'Back-track'}
+        ];
+        legendItems.forEach(l => {
+            mk('line',{x1:l.x,y1:15,x2:l.x+30,y2:15,stroke:l.stroke,'stroke-width':'2','stroke-dasharray':l.dash},legendG);
+            mk('text',{x:l.x+36,y:18,fill:'#6a6a80','font-size':'9','font-family':'inherit'},legendG).textContent=l.label;
+        });
     }
 
-    function initStepper() {
+    // ==================== Diagram State Updates ====================
+    function updateDiagramState(currentState, completedStates) {
+        const { reachable, unreachable } = computeReachableStates(currentState, completedStates);
+        for (const id of Object.keys(smStates)) {
+            const g = document.getElementById('state-' + id);
+            if (!g) continue;
+            g.classList.remove('completed','current','next-available','future','unreachable','viewing');
+            if (completedStates.includes(id)) g.classList.add('completed');
+            else if (id === currentState) g.classList.add('current');
+            else if (unreachable.has(id)) g.classList.add('unreachable');
+            else g.classList.add('future');
+        }
+        highlightNextAvailable(currentState);
+    }
+
+    function highlightNextAvailable(currentState) {
+        // Clear all next-available
+        document.querySelectorAll('.sm-node.next-available').forEach(n => n.classList.remove('next-available'));
+        if (!currentState) return;
+        const t = STATE_TRANSITIONS[currentState];
+        if (t && t.happy) {
+            t.happy.forEach(nextState => {
+                const g = document.getElementById('state-' + nextState);
+                if (g && !g.classList.contains('completed')) {
+                    g.classList.remove('future');
+                    g.classList.add('next-available');
+                }
+            });
+        }
+    }
+
+    // ==================== Node Interaction ====================
+    function onNodeClick(stateId) {
+        if (!walkthroughState.started) return;
+        const g = document.getElementById('state-' + stateId);
+        if (!g) return;
+
+        if (walkthroughState.completedStates.includes(stateId)) {
+            // Completed node: show historical data
+            inspectState(stateId);
+        } else if (stateId === walkthroughState.currentState) {
+            // Current node: show current state data
+            if (walkthroughState.viewingStep !== walkthroughState.currentStep) {
+                inspectStep(walkthroughState.currentStep);
+            }
+        } else if (g.classList.contains('next-available')) {
+            // Next-available: execute next step
+            transportNext();
+        } else {
+            // Future/unreachable: shake
+            g.classList.add('shake');
+            setTimeout(() => g.classList.remove('shake'), 400);
+        }
+    }
+
+    function setNodeViewingHighlight(stateId) {
+        clearNodeViewingHighlight();
+        const g = document.getElementById('state-' + stateId);
+        if (g) g.classList.add('viewing');
+    }
+
+    function clearNodeViewingHighlight() {
+        document.querySelectorAll('.sm-node.viewing').forEach(n => n.classList.remove('viewing'));
+    }
+
+    // ==================== Transition Animation ====================
+    function animateTransition(from, to) {
+        return new Promise(resolve => {
+            if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+                resolve();
+                return;
+            }
+            const edge = document.getElementById('edge-' + from + '-' + to);
+            if (!edge) { resolve(); return; }
+
+            // Flash the edge white then green
+            const orig = edge.getAttribute('stroke');
+            edge.setAttribute('stroke', '#ffffff');
+            edge.setAttribute('stroke-width', '3');
+            edge.setAttribute('opacity', '1');
+
+            // Create particle circle
+            const svg = document.getElementById('explorerSvg');
+            const circle = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
+            circle.setAttribute('r', '4');
+            circle.setAttribute('fill', '#ffffff');
+            svg.appendChild(circle);
+
+            const len = edge.getTotalLength();
+            let start = null;
+            const duration = 600;
+
+            function animate(ts) {
+                if (!start) start = ts;
+                const progress = Math.min((ts - start) / duration, 1);
+                const pt = edge.getPointAtLength(progress * len);
+                circle.setAttribute('cx', pt.x);
+                circle.setAttribute('cy', pt.y);
+                if (progress < 1) {
+                    requestAnimationFrame(animate);
+                } else {
+                    circle.remove();
+                    edge.setAttribute('stroke', '#06d6a0');
+                    edge.setAttribute('stroke-width', '2');
+                    edge.setAttribute('opacity', '0.9');
+                    resolve();
+                }
+            }
+            requestAnimationFrame(animate);
+        });
+    }
+
+    async function animateMultiHop(stateSeq, delay) {
+        delay = delay || 300;
+        for (let i = 0; i < stateSeq.length - 1; i++) {
+            await animateTransition(stateSeq[i], stateSeq[i+1]);
+            if (i < stateSeq.length - 2) await new Promise(r => setTimeout(r, delay));
+        }
+    }
+
+    function resetEdgeStyles() {
+        document.querySelectorAll('.sm-edge').forEach(edge => {
+            // Reset to original style based on data attributes
+            const type = edge.dataset.edgeType || 'happy';
+            const styles = { happy:{stroke:'#06d6a0',width:'2',opacity:'0.9'},
+                             branch:{stroke:'#ffd166',width:'1.8',opacity:'0.8'},
+                             exit:{stroke:'#ef476f',width:'1.2',opacity:'0.5'},
+                             back:{stroke:'#6a6a80',width:'1.2',opacity:'0.5'} };
+            const s = styles[type] || styles.happy;
+            edge.setAttribute('stroke', s.stroke);
+            edge.setAttribute('stroke-width', s.width);
+            edge.setAttribute('opacity', s.opacity);
+        });
+    }
+
+    // ==================== History / Inspect ====================
+    function storeStepResult(stepNum, data) {
+        walkthroughState.history[stepNum] = data;
+    }
+
+    function inspectState(stateId) {
+        const steps = STATE_TO_STEPS[stateId];
+        if (!steps || steps.length === 0) return;
+        // Show the LAST completed step for this state
+        const lastStep = steps.filter(s => walkthroughState.history[s]).pop();
+        if (lastStep) inspectStep(lastStep);
+        setNodeViewingHighlight(stateId);
+    }
+
+    function inspectStep(stepNum) {
+        const data = walkthroughState.history[stepNum];
+        if (!data) return;
+        walkthroughState.viewingStep = stepNum;
+        renderRequestPane(data);
+        renderResponsePane(data);
+        updateStatusBar();
+        // Highlight the state for this step
+        const state = STEP_TO_STATE[stepNum];
+        if (state) setNodeViewingHighlight(state);
+    }
+
+    // ==================== Status Bar ====================
+    function updateStatusBar() {
+        const ws = walkthroughState;
+        document.getElementById('currentStepNum').textContent = ws.currentStep;
+        document.getElementById('statusStepName').textContent =
+            ws.currentStep > 0 ? STEP_NAMES[ws.currentStep - 1] : (ws.started ? 'Session Started' : 'Ready');
+        document.getElementById('statusStateName').textContent = ws.currentState || '';
+
+        const viewInd = document.getElementById('viewingIndicator');
+        if (ws.viewingStep > 0 && ws.viewingStep !== ws.currentStep) {
+            viewInd.style.display = '';
+            document.getElementById('viewingStepNum').textContent = ws.viewingStep;
+        } else {
+            viewInd.style.display = 'none';
+        }
+    }
+
+    // ==================== Transport Bar / Stepper ====================
+    function initTransportBar() {
         const container = document.getElementById('stepper');
         let html = '';
         for (let i = 1; i <= 14; i++) {
-            html += `<div class="step-dot" id="step-${i}" title="${STEP_NAMES[i-1]}">${i}</div>`;
-            if (i < 14) html += '<div class="step-line" id="line-${i}"></div>';
+            html += '<div class="step-dot" id="step-' + i + '" title="' + STEP_NAMES[i-1] + '">' + i + '</div>';
+            if (i < 14) html += '<div class="step-line"></div>';
         }
         container.innerHTML = html;
-    }
-
-    function updateStateFlow(currentState, completedStates) {
-        ALL_STATES.forEach(state => {
-            const node = document.getElementById('state-' + state);
-            if (!node) return;
-            node.className = 'state-node';
-            if (completedStates.includes(state)) node.classList.add('completed');
-            if (state === currentState) {
-                node.classList.remove('completed');
-                node.classList.add('current');
-            }
-        });
-
-        document.querySelectorAll('.state-arrow').forEach((arrow, i) => {
-            arrow.className = 'state-arrow';
-            if (i < completedStates.length && completedStates.includes(ALL_STATES[i])) {
-                arrow.classList.add('completed');
-            }
-        });
     }
 
     function updateStepper(currentStep) {
@@ -897,70 +1381,85 @@
             if (i < currentStep) dot.classList.add('done');
             if (i === currentStep) dot.classList.add('active');
         }
-
         document.querySelectorAll('.step-line').forEach((line, i) => {
             line.className = 'step-line';
             if (i + 1 < currentStep) line.classList.add('done');
         });
     }
 
-    async function walkthroughAction() {
-        const btn = document.getElementById('walkthroughBtn');
+    // ==================== Transport Next (main walkthrough driver) ====================
+    let transportLock = false;
 
-        if (!walkthroughState.started) {
-            btn.disabled = true;
-            btn.textContent = 'Starting...';
-            try {
+    async function transportNext() {
+        if (transportLock) return;
+        transportLock = true;
+        const btn = document.getElementById('walkthroughBtn');
+        const backBtn = document.getElementById('transportBack');
+
+        try {
+            if (!walkthroughState.started) {
+                // === START MODE ===
+                btn.disabled = true;
+                btn.textContent = 'Starting...';
                 const res = await fetch('/api/dev/walkthrough/start', { method: 'POST' });
                 const data = await res.json();
                 walkthroughState.sessionId = data.sessionId;
                 walkthroughState.started = true;
                 walkthroughState.currentStep = 0;
+                walkthroughState.viewingStep = 0;
                 walkthroughState.completedStates = [];
+                walkthroughState.history = [];
                 btn.textContent = 'Next Step \u2192';
                 btn.disabled = false;
 
-                document.getElementById('requestContent').innerHTML = `
-                    <div class="api-call-box">
-                        <span class="api-method POST">SETUP</span>
-                        <span class="api-path">Product Created</span>
-                    </div>
-                    <div class="step-note">
-                        Session <strong>${data.sessionId}</strong> started.<br>
-                        Product: ${data.productCreated?.name} (${data.productCreated?.rate})<br>
-                        Click "Next Step" to begin the mortgage lifecycle.
-                    </div>
-                `;
-                document.getElementById('responseContent').innerHTML = `
-                    <div class="json-view">${syntaxHighlight(JSON.stringify(data, null, 2))}</div>
-                `;
-            } catch (e) {
+                document.getElementById('requestContent').innerHTML = '\
+                    <div class="api-call-box">\
+                        <span class="api-method POST">SETUP</span>\
+                        <span class="api-path">Product Created</span>\
+                    </div>\
+                    <div class="step-note">\
+                        Session <strong>' + data.sessionId + '</strong> started.<br>\
+                        Product: ' + (data.productCreated ? data.productCreated.name : '') + ' (' + (data.productCreated ? data.productCreated.rate : '') + ')<br>\
+                        Click "Next Step" to begin the mortgage lifecycle.\
+                    </div>\
+                ';
+                document.getElementById('responseContent').innerHTML =
+                    '<div class="json-view">' + syntaxHighlight(JSON.stringify(data, null, 2)) + '</div>';
+                updateStatusBar();
+
+            } else if (walkthroughState.complete) {
+                // === RESET MODE ===
+                stopAutoPlay();
+                walkthroughState = {
+                    sessionId: null, currentStep: 0, viewingStep: 0,
+                    started: false, complete: false,
+                    completedStates: [], currentState: null,
+                    history: [], autoPlaying: false, autoPlayTimer: null
+                };
                 btn.textContent = 'Start Walkthrough';
-                btn.disabled = false;
-                alert('Failed to start: ' + e.message);
-            }
-        } else if (walkthroughState.complete) {
-            // Reset
-            walkthroughState = { sessionId: null, currentStep: 0, started: false, complete: false, completedStates: [], currentState: null };
-            btn.textContent = 'Start Walkthrough';
-            initStateFlow();
-            initStepper();
-            document.getElementById('currentStepNum').textContent = '0';
-            document.getElementById('requestContent').innerHTML = '<div class="empty-state" style="height:300px"><p>Click "Start Walkthrough" to begin</p></div>';
-            document.getElementById('responseContent').innerHTML = '<div class="empty-state" style="height:300px"><p>Response data will appear here</p></div>';
-        } else {
-            // Execute next step
-            btn.disabled = true;
-            btn.textContent = 'Executing...';
-            try {
-                const res = await fetch(`/api/dev/walkthrough/${walkthroughState.sessionId}/next`, { method: 'POST' });
+                backBtn.disabled = true;
+                initExplorerDiagram();
+                initTransportBar();
+                resetEdgeStyles();
+                updateStatusBar();
+                clearNodeViewingHighlight();
+                document.getElementById('requestContent').innerHTML = '<div class="empty-state" style="height:300px"><p>Click "Start Walkthrough" to begin</p></div>';
+                document.getElementById('responseContent').innerHTML = '<div class="empty-state" style="height:300px"><p>Response data will appear here</p></div>';
+
+            } else {
+                // === EXECUTE NEXT STEP ===
+                btn.disabled = true;
+                btn.textContent = 'Executing...';
+                clearNodeViewingHighlight();
+
+                const res = await fetch('/api/dev/walkthrough/' + walkthroughState.sessionId + '/next', { method: 'POST' });
                 const data = await res.json();
 
                 walkthroughState.currentStep = data.stepNumber;
-                document.getElementById('currentStepNum').textContent = data.stepNumber;
+                walkthroughState.viewingStep = data.stepNumber;
 
-                // Track all states up to the new state as completed
-                // (handles intermediate states like IN_PROGRESS, READY_FOR_SUBMISSION, DECISIONED)
+                // Track completed states
+                const prevState = walkthroughState.currentState;
                 if (data.newState) {
                     const newStateIdx = ALL_STATES.indexOf(data.newState);
                     if (newStateIdx >= 0) {
@@ -973,110 +1472,219 @@
                 }
                 walkthroughState.currentState = data.newState;
 
-                updateStateFlow(data.newState, walkthroughState.completedStates);
+                // Store history
+                storeStepResult(data.stepNumber, data);
+
+                // Animate state transitions
+                if (data.stateTransitions && data.stateTransitions.length > 1) {
+                    // Multi-hop (step 5 or step 10)
+                    var stateSeq = data.stateTransitions.map(function(t) {
+                        var parts = t.split(/\s*\u2192\s*|\s*->\s*/);
+                        return parts[parts.length - 1].trim();
+                    });
+                    // Build sequence: previous state + all intermediate + final
+                    var seq = [];
+                    if (prevState) seq.push(prevState);
+                    stateSeq.forEach(function(s) { if (s && seq.indexOf(s) === -1) seq.push(s); });
+                    if (seq.length > 1) await animateMultiHop(seq);
+                } else if (prevState && data.newState && prevState !== data.newState) {
+                    await animateTransition(prevState, data.newState);
+                }
+
+                // Update diagram
+                updateDiagramState(data.newState, walkthroughState.completedStates);
                 updateStepper(data.stepNumber);
+                updateStatusBar();
 
-                // Render request pane
+                // Render panes
                 renderRequestPane(data);
-
-                // Render response pane
                 renderResponsePane(data);
 
                 // Update inspector tab
-                if (data.applicationSnapshot) {
-                    renderEntityTree(data.applicationSnapshot);
-                }
-                if (data.workflowEvents) {
-                    renderEventTimeline(data.workflowEvents);
-                }
+                if (data.applicationSnapshot) renderEntityTree(data.applicationSnapshot);
+                if (data.workflowEvents) renderEventTimeline(data.workflowEvents);
+
+                // Enable back button
+                backBtn.disabled = walkthroughState.currentStep <= 1;
 
                 if (data.complete || data.stepsRemaining === 0) {
                     walkthroughState.complete = true;
                     if (data.newState && !walkthroughState.completedStates.includes(data.newState)) {
                         walkthroughState.completedStates.push(data.newState);
                     }
-                    updateStateFlow(null, walkthroughState.completedStates);
+                    updateDiagramState(null, walkthroughState.completedStates);
                     btn.textContent = 'Reset';
+                    stopAutoPlay();
                 } else {
-                    btn.textContent = `Next: ${STEP_NAMES[data.stepNumber] || 'Done'} \u2192`;
+                    btn.textContent = 'Next: ' + (STEP_NAMES[data.stepNumber] || 'Done') + ' \u2192';
                 }
                 btn.disabled = false;
-            } catch (e) {
-                btn.disabled = false;
-                btn.textContent = 'Next Step \u2192';
-                const errorData = await e.response?.json?.() || { message: e.message };
-                document.getElementById('responseContent').innerHTML = `
-                    <div class="json-view" style="color: var(--red)">${JSON.stringify(errorData, null, 2)}</div>
-                `;
             }
+        } catch (e) {
+            btn.disabled = false;
+            btn.textContent = walkthroughState.started ? 'Next Step \u2192' : 'Start Walkthrough';
+            document.getElementById('responseContent').innerHTML =
+                '<div class="json-view" style="color: var(--red)">' + escapeHtml(e.message) + '</div>';
+        } finally {
+            transportLock = false;
         }
     }
 
+    // ==================== Transport Back ====================
+    function transportBack() {
+        if (!walkthroughState.started || walkthroughState.currentStep < 1) return;
+        var viewStep = walkthroughState.viewingStep || walkthroughState.currentStep;
+        var prevStep = viewStep - 1;
+        if (prevStep < 1) return;
+        inspectStep(prevStep);
+        document.getElementById('transportBack').disabled = prevStep <= 1;
+    }
+
+    // ==================== Auto Play ====================
+    function toggleAutoPlay() {
+        if (walkthroughState.autoPlaying) {
+            stopAutoPlay();
+        } else {
+            if (!walkthroughState.started || walkthroughState.complete) return;
+            walkthroughState.autoPlaying = true;
+            document.getElementById('autoPlayBtn').classList.add('active');
+            document.getElementById('autoPlayBtn').textContent = 'Stop';
+            walkthroughState.autoPlayTimer = setInterval(function() {
+                if (walkthroughState.complete || !walkthroughState.started) {
+                    stopAutoPlay();
+                    return;
+                }
+                transportNext();
+            }, 1500);
+        }
+    }
+
+    function stopAutoPlay() {
+        walkthroughState.autoPlaying = false;
+        if (walkthroughState.autoPlayTimer) {
+            clearInterval(walkthroughState.autoPlayTimer);
+            walkthroughState.autoPlayTimer = null;
+        }
+        var btn = document.getElementById('autoPlayBtn');
+        if (btn) { btn.classList.remove('active'); btn.textContent = 'Auto'; }
+    }
+
+    // ==================== Diagram Toggle ====================
+    let showAllPaths = false;
+    function toggleDiagramView() {
+        showAllPaths = !showAllPaths;
+        var btn = document.getElementById('diagramToggle');
+        btn.classList.toggle('active', showAllPaths);
+        btn.textContent = showAllPaths ? 'Hide Alternate Paths' : 'Show All Paths';
+
+        // Toggle exit/branch nodes and edges
+        document.querySelectorAll('[data-exit="true"]').forEach(function(el) {
+            el.style.display = showAllPaths ? '' : 'none';
+        });
+    }
+
+    // ==================== Tooltip ====================
+    function showStateTooltip(stateId, event) {
+        hideStateTooltip();
+        var transitions = STATE_TRANSITIONS[stateId];
+        var sources = EXIT_SOURCES[stateId];
+
+        var html = '<div class="tooltip-title">' + stateId.replace(/_/g, ' ') + '</div>';
+        if (transitions) {
+            if (transitions.happy && transitions.happy.length)
+                html += transitions.happy.map(function(s) { return '<div class="tooltip-transition"><span class="arrow">\u2192</span> ' + s.replace(/_/g,' ') + '</div>'; }).join('');
+            if (transitions.branch && transitions.branch.length)
+                html += transitions.branch.map(function(s) { return '<div class="tooltip-transition"><span class="arrow">\u2197</span> ' + s.replace(/_/g,' ') + '</div>'; }).join('');
+            if (transitions.exits && transitions.exits.length)
+                html += transitions.exits.map(function(s) { return '<div class="tooltip-transition"><span class="arrow">\u2933</span> ' + s.replace(/_/g,' ') + '</div>'; }).join('');
+        }
+        if (sources) {
+            html += '<div class="tooltip-transition" style="margin-top:2px;color:var(--text-muted)">from: ' +
+                sources.map(function(s) { return s.replace(/_/g,' '); }).join(', ') + '</div>';
+        }
+
+        var tooltip = document.createElement('div');
+        tooltip.className = 'state-tooltip';
+        tooltip.id = 'activeTooltip';
+        tooltip.innerHTML = html;
+        document.body.appendChild(tooltip);
+
+        // Position near the mouse/SVG node
+        var nodeEl = event.target.closest('.sm-node');
+        var rect = nodeEl ? nodeEl.getBoundingClientRect() : { left: event.clientX, bottom: event.clientY };
+        tooltip.style.left = rect.left + 'px';
+        tooltip.style.top = (rect.bottom + 6) + 'px';
+    }
+
+    function hideStateTooltip() {
+        var existing = document.getElementById('activeTooltip');
+        if (existing) existing.remove();
+    }
+
+    // ==================== Render Panes ====================
     function renderRequestPane(data) {
-        const api = data.apiCall || {};
-        const method = api.method || 'POST';
+        var api = data.apiCall || {};
+        var method = api.method || 'POST';
 
-        let bodyHtml = '';
+        var bodyHtml = '';
         if (api.body && api.body !== 'null') {
-            const bodyJson = typeof api.body === 'string' ? api.body : JSON.stringify(api.body, null, 2);
-            bodyHtml = `<div class="json-view" style="margin-top:8px">${syntaxHighlight(bodyJson)}</div>`;
+            var bodyJson = typeof api.body === 'string' ? api.body : JSON.stringify(api.body, null, 2);
+            bodyHtml = '<div class="json-view" style="margin-top:8px">' + syntaxHighlight(bodyJson) + '</div>';
         }
 
-        let noteHtml = '';
+        var noteHtml = '';
         if (api.note) {
-            noteHtml = `<div class="step-note">${api.note}</div>`;
+            noteHtml = '<div class="step-note">' + api.note + '</div>';
         }
 
-        let extraHtml = '';
+        var extraHtml = '';
         if (data.stateTransitions) {
             extraHtml += '<div class="step-note"><strong>State transitions:</strong><br>' +
-                data.stateTransitions.map(t => `  ${t}`).join('<br>') + '</div>';
+                data.stateTransitions.map(function(t) { return '  ' + t; }).join('<br>') + '</div>';
         }
         if (data.decisionFlow) {
             extraHtml += '<div class="step-note"><strong>Decision flow:</strong><br>' +
-                data.decisionFlow.map(t => `  ${t}`).join('<br>') + '</div>';
+                data.decisionFlow.map(function(t) { return '  ' + t; }).join('<br>') + '</div>';
         }
 
-        document.getElementById('requestContent').innerHTML = `
-            <div class="api-call-box">
-                <span class="api-method ${method}">${method}</span>
-                <span class="api-path">${api.path || ''}</span>
-            </div>
-            ${bodyHtml}
-            ${noteHtml}
-            ${extraHtml}
-            ${data.complete ? '<div class="complete-banner"><h3>Journey Complete</h3><p>' + (data.message || '') + '</p></div>' : ''}
-        `;
+        document.getElementById('requestContent').innerHTML =
+            '<div class="api-call-box">' +
+                '<span class="api-method ' + method + '">' + method + '</span>' +
+                '<span class="api-path">' + (api.path || '') + '</span>' +
+            '</div>' +
+            bodyHtml +
+            noteHtml +
+            extraHtml +
+            (data.complete ? '<div class="complete-banner"><h3>Journey Complete</h3><p>' + (data.message || '') + '</p></div>' : '');
     }
 
     function renderResponsePane(data) {
-        const changedFields = data.changedFields || [];
-        let snapshotJson = JSON.stringify(data.applicationSnapshot || {}, null, 2);
+        var changedFields = data.changedFields || [];
+        var snapshotJson = JSON.stringify(data.applicationSnapshot || {}, null, 2);
 
         // Highlight changed fields
-        changedFields.forEach(field => {
-            const regex = new RegExp(`("${field.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}"\\s*:)`, 'g');
+        changedFields.forEach(function(field) {
+            var regex = new RegExp('("' + field.replace(/[.*+?^${}()|[\]\\]/g, '\\$&') + '"\\s*:)', 'g');
             snapshotJson = snapshotJson.replace(regex, '<span class="json-changed">$1</span>');
         });
 
-        let html = `
-            <div style="margin-bottom:8px">
-                <span style="font-size:10px;color:var(--text-muted)">
-                    ${data.previousState || '(none)'} \u2192 <span style="color:var(--green)">${data.newState || '(unchanged)'}</span>
-                </span>
-            </div>
-            <div class="json-view">${syntaxHighlight(snapshotJson)}</div>
-        `;
+        var html =
+            '<div style="margin-bottom:8px">' +
+                '<span style="font-size:10px;color:var(--text-muted)">' +
+                    (data.previousState || '(none)') + ' \u2192 <span style="color:var(--green)">' + (data.newState || '(unchanged)') + '</span>' +
+                '</span>' +
+            '</div>' +
+            '<div class="json-view">' + syntaxHighlight(snapshotJson) + '</div>';
 
         document.getElementById('responseContent').innerHTML = html;
     }
 
     // ==================== Data Inspector ====================
     function renderEntityTree(snapshot) {
-        const container = document.getElementById('entityTree');
+        var container = document.getElementById('entityTree');
         container.innerHTML = '';
 
-        const sections = [
+        var sections = [
             { key: 'root', label: 'LoanApplication', data: filterKeys(snapshot, ['parties','securities','documents','financialSnapshot','decisionRecord','offer','consents','workflowEvents']) },
             { key: 'product', label: 'Product', data: snapshot.product },
             { key: 'parties', label: 'Parties', data: snapshot.parties },
@@ -1088,9 +1696,9 @@
             { key: 'consents', label: 'Consents', data: snapshot.consents },
         ];
 
-        sections.forEach(section => {
+        sections.forEach(function(section) {
             if (!section.data) return;
-            const node = document.createElement('div');
+            var node = document.createElement('div');
             node.innerHTML = buildTreeNode(section.label, section.data, true);
             container.appendChild(node);
         });
@@ -1098,9 +1706,9 @@
 
     function filterKeys(obj, exclude) {
         if (!obj) return obj;
-        const result = {};
-        for (const [k, v] of Object.entries(obj)) {
-            if (!exclude.includes(k)) result[k] = v;
+        var result = {};
+        for (var k in obj) {
+            if (obj.hasOwnProperty(k) && exclude.indexOf(k) === -1) result[k] = obj[k];
         }
         return result;
     }
@@ -1108,62 +1716,58 @@
     function buildTreeNode(label, data, open) {
         if (data === null || data === undefined) return '';
 
-        const id = 'tree-' + Math.random().toString(36).substr(2, 6);
-        const isArray = Array.isArray(data);
-        const isObject = typeof data === 'object' && !isArray;
+        var id = 'tree-' + Math.random().toString(36).substr(2, 6);
+        var isArray = Array.isArray(data);
+        var isObject = typeof data === 'object' && !isArray;
 
         if (!isObject && !isArray) {
-            return `<div class="tree-leaf"><span class="key">${label}:</span> <span class="value">${escapeHtml(String(data))}</span></div>`;
+            return '<div class="tree-leaf"><span class="key">' + label + ':</span> <span class="value">' + escapeHtml(String(data)) + '</span></div>';
         }
 
-        const count = isArray ? data.length : Object.keys(data).length;
-        const typeBadge = isArray ? `[${count}]` : `{${count}}`;
+        var count = isArray ? data.length : Object.keys(data).length;
+        var typeBadge = isArray ? '[' + count + ']' : '{' + count + '}';
 
-        let childrenHtml = '';
+        var childrenHtml = '';
         if (isArray) {
-            data.forEach((item, i) => {
-                childrenHtml += `<div class="tree-node">${buildTreeNode(`[${i}]`, item, false)}</div>`;
+            data.forEach(function(item, i) {
+                childrenHtml += '<div class="tree-node">' + buildTreeNode('[' + i + ']', item, false) + '</div>';
             });
         } else {
-            for (const [k, v] of Object.entries(data)) {
-                if (v !== null && v !== undefined) {
-                    childrenHtml += `<div class="tree-node">${buildTreeNode(k, v, false)}</div>`;
+            for (var k in data) {
+                if (data.hasOwnProperty(k) && data[k] !== null && data[k] !== undefined) {
+                    childrenHtml += '<div class="tree-node">' + buildTreeNode(k, data[k], false) + '</div>';
                 }
             }
         }
 
-        return `
-            <div class="tree-toggle" onclick="this.querySelector('.arrow').classList.toggle('open');this.nextElementSibling.style.display=this.nextElementSibling.style.display==='none'?'block':'none'">
-                <span class="arrow ${open ? 'open' : ''}">\u25B6</span>
-                <span>${escapeHtml(label)}</span>
-                <span class="type-badge">${typeBadge}</span>
-            </div>
-            <div style="display:${open ? 'block' : 'none'}">
-                ${childrenHtml}
-            </div>
-        `;
+        return '<div class="tree-toggle" onclick="this.querySelector(\'.arrow\').classList.toggle(\'open\');this.nextElementSibling.style.display=this.nextElementSibling.style.display===\'none\'?\'block\':\'none\'">' +
+                '<span class="arrow ' + (open ? 'open' : '') + '">\u25B6</span>' +
+                '<span>' + escapeHtml(label) + '</span>' +
+                '<span class="type-badge">' + typeBadge + '</span>' +
+            '</div>' +
+            '<div style="display:' + (open ? 'block' : 'none') + '">' +
+                childrenHtml +
+            '</div>';
     }
 
     function renderEventTimeline(events) {
-        const container = document.getElementById('eventTimeline');
+        var container = document.getElementById('eventTimeline');
         if (!events || events.length === 0) {
             container.innerHTML = '<div class="empty-state" style="height:200px"><p>No events recorded</p></div>';
             return;
         }
 
-        container.innerHTML = events.map(e => {
-            const time = e.occurredAt ? new Date(e.occurredAt).toLocaleTimeString() : '';
-            const transition = e.previousState && e.newState
-                ? `<span class="from">${e.previousState}</span> \u2192 <span class="to">${e.newState}</span>`
+        container.innerHTML = events.map(function(e) {
+            var time = e.occurredAt ? new Date(e.occurredAt).toLocaleTimeString() : '';
+            var transition = e.previousState && e.newState
+                ? '<span class="from">' + e.previousState + '</span> \u2192 <span class="to">' + e.newState + '</span>'
                 : '';
-            return `
-                <div class="event-item">
-                    <span class="event-time">${time}</span>
-                    <span class="event-type">${e.eventType}</span>
-                    <span class="event-transition">${transition}</span>
-                    <span style="color:var(--text-muted);font-size:10px">${e.actorId || ''}</span>
-                </div>
-            `;
+            return '<div class="event-item">' +
+                    '<span class="event-time">' + time + '</span>' +
+                    '<span class="event-type">' + e.eventType + '</span>' +
+                    '<span class="event-transition">' + transition + '</span>' +
+                    '<span style="color:var(--text-muted);font-size:10px">' + (e.actorId || '') + '</span>' +
+                '</div>';
         }).join('');
     }
 
@@ -1174,7 +1778,7 @@
         return json.replace(
             /("(\\u[a-zA-Z0-9]{4}|\\[^u]|[^\\"])*"(\s*:)?|\b(true|false|null)\b|-?\d+(?:\.\d*)?(?:[eE][+\-]?\d+)?)/g,
             function (match) {
-                let cls = 'json-number';
+                var cls = 'json-number';
                 if (/^"/.test(match)) {
                     if (/:$/.test(match)) {
                         cls = 'json-key';
@@ -1192,17 +1796,15 @@
     }
 
     function escapeHtml(str) {
-        const div = document.createElement('div');
+        var div = document.createElement('div');
         div.textContent = str;
         return div.innerHTML;
     }
 
     // ==================== Init ====================
-    initStateFlow();
-    initStepper();
+    initExplorerDiagram();
+    initTransportBar();
     loadTestCatalog();
-
-    // Try to load existing test results on page load
     loadTestResults();
     </script>
 </body>

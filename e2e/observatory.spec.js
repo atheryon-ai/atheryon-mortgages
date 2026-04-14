@@ -16,7 +16,7 @@ test.describe('Test Observatory Dashboard', () => {
 
   test('all three tabs are visible', async ({ page }) => {
     await expect(page.locator('.tab-btn', { hasText: 'Test Runner' })).toBeVisible();
-    await expect(page.locator('.tab-btn', { hasText: 'Lifecycle Walkthrough' })).toBeVisible();
+    await expect(page.locator('.tab-btn', { hasText: 'Lifecycle Explorer' })).toBeVisible();
     await expect(page.locator('.tab-btn', { hasText: 'Data Inspector' })).toBeVisible();
   });
 
@@ -28,8 +28,8 @@ test.describe('Test Observatory Dashboard', () => {
   // ==================== Tab Switching ====================
 
   test('clicking tabs switches content', async ({ page }) => {
-    // Switch to Walkthrough
-    await page.click('.tab-btn:has-text("Lifecycle Walkthrough")');
+    // Switch to Lifecycle Explorer
+    await page.click('.tab-btn:has-text("Lifecycle Explorer")');
     await expect(page.locator('#walkthrough')).toHaveClass(/active/);
     await expect(page.locator('#tests')).not.toHaveClass(/active/);
 
@@ -75,10 +75,10 @@ test.describe('Test Observatory Dashboard', () => {
     await expect(page.locator('#testConsole')).toContainText('Waiting for test run');
   });
 
-  // ==================== Lifecycle Walkthrough ====================
+  // ==================== Lifecycle Explorer ====================
 
   test('walkthrough shows state diagram with all states', async ({ page }) => {
-    await page.click('.tab-btn:has-text("Lifecycle Walkthrough")');
+    await page.click('.tab-btn:has-text("Lifecycle Explorer")');
 
     const stateIds = [
       'DRAFT', 'IN_PROGRESS', 'READY_FOR_SUBMISSION', 'SUBMITTED',
@@ -92,12 +92,12 @@ test.describe('Test Observatory Dashboard', () => {
   });
 
   test('walkthrough shows 14 step dots', async ({ page }) => {
-    await page.click('.tab-btn:has-text("Lifecycle Walkthrough")');
+    await page.click('.tab-btn:has-text("Lifecycle Explorer")');
     await expect(page.locator('.step-dot')).toHaveCount(14);
   });
 
   test('walkthrough starts and creates a session', async ({ page }) => {
-    await page.click('.tab-btn:has-text("Lifecycle Walkthrough")');
+    await page.click('.tab-btn:has-text("Lifecycle Explorer")');
 
     const btn = page.locator('#walkthroughBtn');
     await expect(btn).toHaveText('Start Walkthrough');
@@ -113,7 +113,7 @@ test.describe('Test Observatory Dashboard', () => {
   });
 
   test('walkthrough step 1 creates application in DRAFT', async ({ page }) => {
-    await page.click('.tab-btn:has-text("Lifecycle Walkthrough")');
+    await page.click('.tab-btn:has-text("Lifecycle Explorer")');
 
     // Start
     await page.click('#walkthroughBtn');
@@ -138,7 +138,7 @@ test.describe('Test Observatory Dashboard', () => {
   });
 
   test('full 14-step walkthrough completes successfully', async ({ page }) => {
-    await page.click('.tab-btn:has-text("Lifecycle Walkthrough")');
+    await page.click('.tab-btn:has-text("Lifecycle Explorer")');
 
     // Start walkthrough
     await page.click('#walkthroughBtn');
@@ -162,7 +162,7 @@ test.describe('Test Observatory Dashboard', () => {
   });
 
   test('all state nodes highlight during full walkthrough', async ({ page }) => {
-    await page.click('.tab-btn:has-text("Lifecycle Walkthrough")');
+    await page.click('.tab-btn:has-text("Lifecycle Explorer")');
 
     // Start + run all 14 steps
     await page.click('#walkthroughBtn');
@@ -188,7 +188,7 @@ test.describe('Test Observatory Dashboard', () => {
   });
 
   test('walkthrough shows state transitions for submission step', async ({ page }) => {
-    await page.click('.tab-btn:has-text("Lifecycle Walkthrough")');
+    await page.click('.tab-btn:has-text("Lifecycle Explorer")');
 
     // Start + steps 1-5
     await page.click('#walkthroughBtn');
@@ -212,7 +212,7 @@ test.describe('Test Observatory Dashboard', () => {
   });
 
   test('walkthrough shows decision flow detail', async ({ page }) => {
-    await page.click('.tab-btn:has-text("Lifecycle Walkthrough")');
+    await page.click('.tab-btn:has-text("Lifecycle Explorer")');
 
     // Start + steps 1-10
     await page.click('#walkthroughBtn');
@@ -234,7 +234,7 @@ test.describe('Test Observatory Dashboard', () => {
   });
 
   test('walkthrough reset returns to initial state', async ({ page }) => {
-    await page.click('.tab-btn:has-text("Lifecycle Walkthrough")');
+    await page.click('.tab-btn:has-text("Lifecycle Explorer")');
 
     // Start + run all 14 steps
     await page.click('#walkthroughBtn');
@@ -260,7 +260,7 @@ test.describe('Test Observatory Dashboard', () => {
   // ==================== Data Inspector ====================
 
   test('data inspector populates during walkthrough', async ({ page }) => {
-    await page.click('.tab-btn:has-text("Lifecycle Walkthrough")');
+    await page.click('.tab-btn:has-text("Lifecycle Explorer")');
 
     // Start + 3 steps (enough to have parties + securities)
     await page.click('#walkthroughBtn');
@@ -284,7 +284,7 @@ test.describe('Test Observatory Dashboard', () => {
   });
 
   test('data inspector shows full entity tree after complete walkthrough', async ({ page }) => {
-    await page.click('.tab-btn:has-text("Lifecycle Walkthrough")');
+    await page.click('.tab-btn:has-text("Lifecycle Explorer")');
 
     // Run full walkthrough
     await page.click('#walkthroughBtn');
@@ -384,6 +384,50 @@ test.describe('Test Observatory Dashboard', () => {
     expect(events[0].newState).toBe('DRAFT');
   });
 
+  // ==================== Multi-Path State Machine ====================
+
+  test('toggle shows and hides exit states', async ({ page }) => {
+    await page.click('.tab-btn:has-text("Lifecycle Explorer")');
+
+    // Exit states hidden by default
+    await expect(page.locator('#state-WITHDRAWN')).not.toBeVisible();
+    await expect(page.locator('#state-DECLINED')).not.toBeVisible();
+    await expect(page.locator('#state-LAPSED')).not.toBeVisible();
+    await expect(page.locator('#state-CONDITIONALLY_APPROVED')).not.toBeVisible();
+
+    // Toggle on
+    await page.click('#diagramToggle');
+    await expect(page.locator('#state-WITHDRAWN')).toBeVisible();
+    await expect(page.locator('#state-DECLINED')).toBeVisible();
+    await expect(page.locator('#state-LAPSED')).toBeVisible();
+    await expect(page.locator('#state-CONDITIONALLY_APPROVED')).toBeVisible();
+
+    // Toggle off
+    await page.click('#diagramToggle');
+    await expect(page.locator('#state-WITHDRAWN')).not.toBeVisible();
+    await expect(page.locator('#state-DECLINED')).not.toBeVisible();
+  });
+
+  test('DECISIONED node has diamond shape in SVG', async ({ page }) => {
+    await page.click('.tab-btn:has-text("Lifecycle Explorer")');
+    await expect(page.locator('#state-DECISIONED polygon')).toBeVisible();
+  });
+
+  test('hover tooltip shows transitions', async ({ page }) => {
+    await page.click('.tab-btn:has-text("Lifecycle Explorer")');
+
+    // Hover over DECISIONED
+    await page.hover('#state-DECISIONED');
+
+    // Tooltip should appear with outgoing transitions
+    const tooltip = page.locator('.state-tooltip');
+    await expect(tooltip).toBeVisible({ timeout: 3000 });
+    await expect(tooltip).toContainText('DECISIONED');
+    await expect(tooltip).toContainText('APPROVED');
+    await expect(tooltip).toContainText('DECLINED');
+    await expect(tooltip).toContainText('COND');
+  });
+
   test('DELETE /api/dev/walkthrough/:id cleans up session', async ({ request }) => {
     const start = await (await request.post('/api/dev/walkthrough/start')).json();
     const sessionId = start.sessionId;
@@ -394,5 +438,92 @@ test.describe('Test Observatory Dashboard', () => {
     // Session should be gone
     const get = await request.get(`/api/dev/walkthrough/${sessionId}`);
     expect(get.status()).toBe(404);
+  });
+
+  // ==================== Lifecycle Explorer — New Features ====================
+
+  test('back navigation shows previous step data', async ({ page }) => {
+    await page.click('.tab-btn:has-text("Lifecycle Explorer")');
+
+    // Start walkthrough
+    await page.click('#walkthroughBtn');
+    await expect(page.locator('#walkthroughBtn')).toHaveText(/Next.*→/, { timeout: 10000 });
+
+    // Execute 3 steps
+    for (let step = 1; step <= 3; step++) {
+      await page.click('#walkthroughBtn');
+      await expect(page.locator('#currentStepNum')).toHaveText(String(step), { timeout: 15000 });
+    }
+
+    // Click Back
+    await page.click('#transportBack');
+
+    // Viewing indicator should appear
+    await expect(page.locator('#viewingIndicator')).toBeVisible();
+    await expect(page.locator('#viewingStepNum')).toHaveText('2');
+
+    // Request pane should show step 2 data (Add Borrower → /api/v1/parties)
+    await expect(page.locator('#requestContent')).toContainText('/api/v1/parties');
+  });
+
+  test('clicking completed node shows historical data', async ({ page }) => {
+    await page.click('.tab-btn:has-text("Lifecycle Explorer")');
+
+    // Start + execute 5 steps (reaches SUBMITTED)
+    await page.click('#walkthroughBtn');
+    await expect(page.locator('#walkthroughBtn')).toHaveText(/Next.*→/, { timeout: 10000 });
+
+    for (let step = 1; step <= 5; step++) {
+      await page.click('#walkthroughBtn');
+      await expect(page.locator('#currentStepNum')).toHaveText(String(step), { timeout: 15000 });
+    }
+
+    // Click the completed DRAFT node via JS dispatch (SVG <g> elements need this in Playwright)
+    await page.locator('#state-DRAFT').dispatchEvent('click');
+
+    // Should show viewing highlight and historical data
+    await expect(page.locator('#state-DRAFT')).toHaveClass(/viewing/);
+    await expect(page.locator('#viewingIndicator')).toBeVisible();
+  });
+
+  test('auto-play advances through steps', async ({ page }) => {
+    await page.click('.tab-btn:has-text("Lifecycle Explorer")');
+
+    // Start walkthrough
+    await page.click('#walkthroughBtn');
+    await expect(page.locator('#walkthroughBtn')).toHaveText(/Next.*→/, { timeout: 10000 });
+
+    // Execute first step manually
+    await page.click('#walkthroughBtn');
+    await expect(page.locator('#currentStepNum')).toHaveText('1', { timeout: 15000 });
+
+    // Click Auto
+    await page.click('#autoPlayBtn');
+    await expect(page.locator('#autoPlayBtn')).toHaveClass(/active/);
+
+    // Wait for auto-play to advance a few steps (at 1.5s intervals)
+    await expect(page.locator('#currentStepNum')).not.toHaveText('1', { timeout: 10000 });
+
+    // Step should have advanced
+    const stepText = await page.locator('#currentStepNum').textContent();
+    expect(parseInt(stepText)).toBeGreaterThan(1);
+  });
+
+  test('State Machine tab does not exist', async ({ page }) => {
+    await expect(page.locator('.tab-btn:has-text("State Machine")')).toHaveCount(0);
+    await expect(page.locator('#statemachine')).toHaveCount(0);
+  });
+
+  test('SVG diagram is visible in Lifecycle Explorer', async ({ page }) => {
+    await page.click('.tab-btn:has-text("Lifecycle Explorer")');
+    await expect(page.locator('#explorerSvg')).toBeVisible();
+
+    // Should have state nodes as SVG groups
+    await expect(page.locator('#state-DRAFT')).toBeVisible();
+    await expect(page.locator('#state-SETTLED')).toBeVisible();
+
+    // Should have edges
+    const edgeCount = await page.locator('.sm-edge').count();
+    expect(edgeCount).toBeGreaterThan(0);
   });
 });
