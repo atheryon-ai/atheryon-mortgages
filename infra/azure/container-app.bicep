@@ -11,6 +11,18 @@ param imageTag string = 'latest'
 @description('Azure region')
 param location string = resourceGroup().location
 
+@description('PostgreSQL connection string (ignored in dev — uses H2)')
+@secure()
+param dbUrl string = ''
+
+@description('PostgreSQL username')
+@secure()
+param dbUsername string = ''
+
+@description('PostgreSQL password')
+@secure()
+param dbPassword string = ''
+
 // ── Naming ──────────────────────────────────────────────────────────────────────
 var containerAppName = 'ca-mortgages-${environment}'
 var registryName = 'crlabsdev'
@@ -34,6 +46,11 @@ resource containerApp 'Microsoft.App/containerApps@2023-05-01' = {
     managedEnvironmentId: containerEnv.id
     configuration: {
       activeRevisionsMode: 'Single'
+      secrets: [
+        { name: 'db-url', value: dbUrl }
+        { name: 'db-username', value: dbUsername }
+        { name: 'db-password', value: dbPassword }
+      ]
       ingress: {
         external: false // internal only — labs-platform proxies to this
         targetPort: 8080
@@ -59,6 +76,10 @@ resource containerApp 'Microsoft.App/containerApps@2023-05-01' = {
           env: [
             { name: 'SPRING_PROFILES_ACTIVE', value: environment }
             { name: 'JAVA_OPTS', value: '-Xmx512m -Xms256m -XX:+UseG1GC -XX:+UseContainerSupport' }
+            // Database — only used when profile != dev (dev uses H2 in-memory)
+            { name: 'DB_URL', secretRef: 'db-url' }
+            { name: 'DB_USERNAME', secretRef: 'db-username' }
+            { name: 'DB_PASSWORD', secretRef: 'db-password' }
           ]
           probes: [
             {

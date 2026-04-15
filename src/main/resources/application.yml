@@ -3,7 +3,7 @@ spring:
     name: atheryon-mortgages
 
   datasource:
-    url: jdbc:postgresql://localhost:5432/atheryon_mortgages
+    url: ${DB_URL:jdbc:postgresql://localhost:5432/atheryon_mortgages}
     username: ${DB_USERNAME:atheryon}
     password: ${DB_PASSWORD:atheryon}
     driver-class-name: org.postgresql.Driver
