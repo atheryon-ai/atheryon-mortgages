@@ -1,8 +1,10 @@
 package com.atheryon.mortgages.service;
 
+import com.atheryon.mortgages.domain.entity.DecisionRecord;
 import com.atheryon.mortgages.domain.entity.LoanApplication;
 import com.atheryon.mortgages.domain.entity.Offer;
 import com.atheryon.mortgages.domain.enums.ApplicationStatus;
+import com.atheryon.mortgages.domain.enums.DecisionOutcome;
 import com.atheryon.mortgages.domain.enums.OfferStatus;
 import com.atheryon.mortgages.exception.BusinessRuleException;
 import com.atheryon.mortgages.exception.ResourceNotFoundException;
@@ -41,9 +43,16 @@ public class OfferService {
         LoanApplication app = applicationRepository.findById(applicationId)
                 .orElseThrow(() -> new ResourceNotFoundException("LoanApplication", "id", applicationId));
 
-        if (app.getStatus() != ApplicationStatus.APPROVED) {
+        if (app.getStatus() != ApplicationStatus.DECISIONED) {
             throw new BusinessRuleException("INVALID_OFFER_STATE",
-                    "Offers can only be generated for APPROVED applications");
+                    "Offers can only be generated for applications in DECISIONED status");
+        }
+        DecisionRecord decision = app.getDecisionRecord();
+        if (decision == null
+                || (decision.getOutcome() != DecisionOutcome.APPROVED
+                        && decision.getOutcome() != DecisionOutcome.CONDITIONALLY_APPROVED)) {
+            throw new BusinessRuleException("INVALID_OFFER_OUTCOME",
+                    "Offers can only be generated when decisionRecord.outcome is APPROVED or CONDITIONALLY_APPROVED");
         }
 
         BigDecimal approvedAmount = app.getRequestedAmount();
@@ -112,7 +121,7 @@ public class OfferService {
         offer.setAcceptedBy(acceptedBy);
 
         LoanApplication app = offer.getApplication();
-        stateMachine.transition(app, ApplicationStatus.OFFER_ACCEPTED, acceptedBy, "CUSTOMER");
+        stateMachine.transition(app, ApplicationStatus.ACCEPTED, acceptedBy, "CUSTOMER");
         app.setUpdatedAt(LocalDateTime.now());
         applicationRepository.save(app);
 

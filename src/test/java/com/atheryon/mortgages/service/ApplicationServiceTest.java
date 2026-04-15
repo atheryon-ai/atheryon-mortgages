@@ -95,15 +95,23 @@ class ApplicationServiceTest {
         app.setApplicationParties(List.of(party));
         app.setSecurities(List.of(security));
 
-        when(applicationRepository.findById(appId)).thenReturn(Optional.of(app));
+        when(applicationRepository.findByIdWithDetails(appId)).thenReturn(Optional.of(app));
+        // submit() auto-advances DRAFT → IN_PROGRESS → READY_FOR_SUBMISSION → SUBMITTED.
+        // Simulate the real state machine mutating the app on each call.
+        when(stateMachine.transition(any(), eq(ApplicationStatus.IN_PROGRESS), any(), any()))
+                .thenAnswer(inv -> { app.setStatus(ApplicationStatus.IN_PROGRESS); return ApplicationStatus.IN_PROGRESS; });
+        when(stateMachine.transition(any(), eq(ApplicationStatus.READY_FOR_SUBMISSION), any(), any()))
+                .thenAnswer(inv -> { app.setStatus(ApplicationStatus.READY_FOR_SUBMISSION); return ApplicationStatus.READY_FOR_SUBMISSION; });
         when(stateMachine.transition(any(), eq(ApplicationStatus.SUBMITTED), any(), any()))
-                .thenReturn(ApplicationStatus.SUBMITTED);
+                .thenAnswer(inv -> { app.setStatus(ApplicationStatus.SUBMITTED); return ApplicationStatus.SUBMITTED; });
         when(applicationRepository.save(any())).thenAnswer(invocation -> invocation.getArgument(0));
         when(workflowEventRepository.save(any())).thenAnswer(invocation -> invocation.getArgument(0));
 
         LoanApplication result = service.submit(appId);
 
         assertThat(result.getSubmittedAt()).isNotNull();
+        verify(stateMachine).transition(app, ApplicationStatus.IN_PROGRESS, "SYSTEM", "SYSTEM");
+        verify(stateMachine).transition(app, ApplicationStatus.READY_FOR_SUBMISSION, "SYSTEM", "SYSTEM");
         verify(stateMachine).transition(app, ApplicationStatus.SUBMITTED, "SYSTEM", "SYSTEM");
     }
 
@@ -120,7 +128,7 @@ class ApplicationServiceTest {
         app.setApplicationParties(List.of(new ApplicationParty()));
         app.setSecurities(List.of(new PropertySecurity()));
 
-        when(applicationRepository.findById(appId)).thenReturn(Optional.of(app));
+        when(applicationRepository.findByIdWithDetails(appId)).thenReturn(Optional.of(app));
 
         assertThatThrownBy(() -> service.submit(appId))
                 .isInstanceOf(BusinessRuleException.class)
@@ -134,7 +142,7 @@ class ApplicationServiceTest {
         app.setId(appId);
         app.setStatus(ApplicationStatus.SUBMITTED);
 
-        when(applicationRepository.findById(appId)).thenReturn(Optional.of(app));
+        when(applicationRepository.findByIdWithDetails(appId)).thenReturn(Optional.of(app));
         when(stateMachine.transition(any(), eq(ApplicationStatus.WITHDRAWN), any(), any()))
                 .thenReturn(ApplicationStatus.WITHDRAWN);
         when(applicationRepository.save(any())).thenAnswer(invocation -> invocation.getArgument(0));
@@ -152,7 +160,7 @@ class ApplicationServiceTest {
         app.setId(appId);
         app.setStatus(ApplicationStatus.SUBMITTED);
 
-        when(applicationRepository.findById(appId)).thenReturn(Optional.of(app));
+        when(applicationRepository.findByIdWithDetails(appId)).thenReturn(Optional.of(app));
 
         LoanApplication updates = new LoanApplication();
         updates.setRequestedAmount(new BigDecimal("600000"));
@@ -170,7 +178,7 @@ class ApplicationServiceTest {
         app.setStatus(ApplicationStatus.DRAFT);
         app.setRequestedAmount(new BigDecimal("500000"));
 
-        when(applicationRepository.findById(appId)).thenReturn(Optional.of(app));
+        when(applicationRepository.findByIdWithDetails(appId)).thenReturn(Optional.of(app));
         when(applicationRepository.save(any())).thenAnswer(invocation -> invocation.getArgument(0));
 
         LoanApplication updates = new LoanApplication();
@@ -194,7 +202,7 @@ class ApplicationServiceTest {
         app.setApplicationParties(List.of());
         app.setSecurities(List.of(new PropertySecurity()));
 
-        when(applicationRepository.findById(appId)).thenReturn(Optional.of(app));
+        when(applicationRepository.findByIdWithDetails(appId)).thenReturn(Optional.of(app));
 
         assertThatThrownBy(() -> service.submit(appId))
                 .isInstanceOf(BusinessRuleException.class);
@@ -213,7 +221,7 @@ class ApplicationServiceTest {
         app.setApplicationParties(List.of(new ApplicationParty()));
         app.setSecurities(List.of());
 
-        when(applicationRepository.findById(appId)).thenReturn(Optional.of(app));
+        when(applicationRepository.findByIdWithDetails(appId)).thenReturn(Optional.of(app));
 
         assertThatThrownBy(() -> service.submit(appId))
                 .isInstanceOf(BusinessRuleException.class);

@@ -15,17 +15,16 @@ public class ApplicationStateMachine {
 
     private static final Map<ApplicationStatus, Set<ApplicationStatus>> TRANSITIONS = Map.ofEntries(
             Map.entry(DRAFT, Set.of(IN_PROGRESS, WITHDRAWN)),
-            Map.entry(IN_PROGRESS, Set.of(READY_FOR_SUBMISSION, WITHDRAWN)),
-            Map.entry(READY_FOR_SUBMISSION, Set.of(SUBMITTED, IN_PROGRESS)),
+            Map.entry(IN_PROGRESS, Set.of(READY_FOR_SUBMISSION, DRAFT, WITHDRAWN)),
+            Map.entry(READY_FOR_SUBMISSION, Set.of(SUBMITTED, IN_PROGRESS, WITHDRAWN)),
             Map.entry(SUBMITTED, Set.of(UNDER_ASSESSMENT, WITHDRAWN)),
-            Map.entry(UNDER_ASSESSMENT, Set.of(VERIFIED, DECLINED, WITHDRAWN)),
-            Map.entry(VERIFIED, Set.of(DECISIONED)),
-            Map.entry(DECISIONED, Set.of(APPROVED, CONDITIONALLY_APPROVED, DECLINED)),
-            Map.entry(CONDITIONALLY_APPROVED, Set.of(APPROVED, DECLINED, WITHDRAWN)),
-            Map.entry(APPROVED, Set.of(OFFER_ISSUED)),
-            Map.entry(OFFER_ISSUED, Set.of(OFFER_ACCEPTED, LAPSED, WITHDRAWN)),
-            Map.entry(OFFER_ACCEPTED, Set.of(SETTLEMENT_IN_PROGRESS)),
-            Map.entry(SETTLEMENT_IN_PROGRESS, Set.of(SETTLED, WITHDRAWN))
+            Map.entry(UNDER_ASSESSMENT, Set.of(VERIFIED, WITHDRAWN)),
+            Map.entry(VERIFIED, Set.of(DECISIONED, WITHDRAWN)),
+            Map.entry(DECISIONED, Set.of(OFFER_ISSUED, WITHDRAWN)),
+            Map.entry(OFFER_ISSUED, Set.of(ACCEPTED, LAPSED, WITHDRAWN)),
+            Map.entry(ACCEPTED, Set.of(SETTLEMENT_IN_PROGRESS, WITHDRAWN)),
+            Map.entry(SETTLEMENT_IN_PROGRESS, Set.of(SETTLED, WITHDRAWN)),
+            Map.entry(SETTLED, Set.of(SERVICING))
     );
 
     public boolean canTransition(ApplicationStatus from, ApplicationStatus to) {

@@ -55,6 +55,9 @@ class ApplicationLifecycleIntegrationTest {
     private ConsentRecordRepository consentRecordRepository;
 
     @Autowired
+    private DecisionRecordRepository decisionRecordRepository;
+
+    @Autowired
     private EntityManager entityManager;
 
     private Product testProduct;
@@ -181,15 +184,7 @@ class ApplicationLifecycleIntegrationTest {
         entityManager.flush();
         entityManager.clear();
 
-        // Step 5: Advance to READY_FOR_SUBMISSION (via repo, since no API endpoint for intermediate states)
-        // State machine path: DRAFT -> IN_PROGRESS -> READY_FOR_SUBMISSION -> SUBMITTED
-        app = loanApplicationRepository.findById(appId).orElseThrow();
-        app.setStatus(ApplicationStatus.READY_FOR_SUBMISSION);
-        loanApplicationRepository.save(app);
-        entityManager.flush();
-        entityManager.clear();
-
-        // Submit application → SUBMITTED
+        // Step 5: Submit application — auto-advances DRAFT → IN_PROGRESS → READY_FOR_SUBMISSION → SUBMITTED
         mockMvc.perform(post("/api/v1/applications/{id}/submit", appId))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.status").value("SUBMITTED"));
@@ -225,13 +220,17 @@ class ApplicationLifecycleIntegrationTest {
         String outcome = decisionJson.get("outcome").asText();
         assertThat(outcome).isIn("APPROVED", "CONDITIONALLY_APPROVED", "DECLINED", "REFERRED_TO_UNDERWRITER");
 
-        // If not APPROVED, manually advance status via repo to continue lifecycle testing
+        // If outcome is not APPROVED/CONDITIONALLY_APPROVED, coerce the DecisionRecord via repo so
+        // OfferService.generateOffer's outcome gate passes. Status stays DECISIONED — which is correct.
         entityManager.flush();
         entityManager.clear();
         LoanApplication currentApp = loanApplicationRepository.findById(appId).orElseThrow();
-        if (currentApp.getStatus() != ApplicationStatus.APPROVED) {
-            currentApp.setStatus(ApplicationStatus.APPROVED);
-            loanApplicationRepository.save(currentApp);
+        DecisionRecord decisionRecord = currentApp.getDecisionRecord();
+        if (decisionRecord != null
+                && decisionRecord.getOutcome() != DecisionOutcome.APPROVED
+                && decisionRecord.getOutcome() != DecisionOutcome.CONDITIONALLY_APPROVED) {
+            decisionRecord.setOutcome(DecisionOutcome.APPROVED);
+            decisionRecordRepository.save(decisionRecord);
             entityManager.flush();
             entityManager.clear();
         }
@@ -246,7 +245,7 @@ class ApplicationLifecycleIntegrationTest {
         JsonNode offerJson = objectMapper.readTree(offerResult.getResponse().getContentAsString());
         UUID offerId = UUID.fromString(offerJson.get("id").asText());
 
-        // Step 11: Accept the offer → OFFER_ACCEPTED
+        // Step 11: Accept the offer → application status = ACCEPTED
         String acceptPayload = """
                 {
                     "acceptedBy": "jane.smith@example.com",
@@ -259,10 +258,10 @@ class ApplicationLifecycleIntegrationTest {
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.offerStatus").value("ACCEPTED"));
 
-        // Verify final application status is OFFER_ACCEPTED
+        // Verify final application status is ACCEPTED
         mockMvc.perform(get("/api/v1/applications/{id}", appId))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.status").value("OFFER_ACCEPTED"));
+                .andExpect(jsonPath("$.status").value("ACCEPTED"));
     }
 
     @Test
@@ -307,14 +306,7 @@ class ApplicationLifecycleIntegrationTest {
         entityManager.flush();
         entityManager.clear();
 
-        // Advance to READY_FOR_SUBMISSION for submit to work
-        app = loanApplicationRepository.findById(appId).orElseThrow();
-        app.setStatus(ApplicationStatus.READY_FOR_SUBMISSION);
-        loanApplicationRepository.save(app);
-        entityManager.flush();
-        entityManager.clear();
-
-        // Submit
+        // Submit — auto-advances through intermediate states
         mockMvc.perform(post("/api/v1/applications/{id}/submit", appId))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.status").value("SUBMITTED"));

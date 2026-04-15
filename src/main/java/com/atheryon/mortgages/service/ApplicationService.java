@@ -113,7 +113,18 @@ public class ApplicationService {
         LoanApplication app = getById(id);
         validateForSubmission(app);
         ApplicationStatus prev = app.getStatus();
+
+        // Auto-advance through intermediate states when validation passes.
+        // Submission is the user-facing action; the rework lifecycle (DRAFT → IN_PROGRESS →
+        // READY_FOR_SUBMISSION) is an internal edit workflow, not a per-step API surface.
+        if (app.getStatus() == ApplicationStatus.DRAFT) {
+            stateMachine.transition(app, ApplicationStatus.IN_PROGRESS, "SYSTEM", "SYSTEM");
+        }
+        if (app.getStatus() == ApplicationStatus.IN_PROGRESS) {
+            stateMachine.transition(app, ApplicationStatus.READY_FOR_SUBMISSION, "SYSTEM", "SYSTEM");
+        }
         stateMachine.transition(app, ApplicationStatus.SUBMITTED, "SYSTEM", "SYSTEM");
+
         app.setSubmittedAt(LocalDateTime.now());
         app.setUpdatedAt(LocalDateTime.now());
         LoanApplication saved = applicationRepository.save(app);
