@@ -1,0 +1,167 @@
+{
+  "Package": {
+    "@UniqueID": "PKG-2026-005",
+    "@ProductionData": true,
+    "Content": {
+      "Application": {
+        "@UniqueID": "APP-2026-SARAH-005",
+        "Overview": {
+          "LoanPurpose": "OWNER_OCCUPIED_PURCHASE",
+          "Submitted": "2026-04-15T12:30:00+10:00"
+        },
+        "PersonApplicant": [
+          {
+            "@PrimaryApplicant": true,
+            "PersonName": {
+              "FirstName": "Sarah",
+              "MiddleName": "Jane",
+              "Surname": "Mitchell"
+            },
+            "DateOfBirth": "1985-03-22",
+            "Gender": "Female",
+            "Email": "sarah.mitchell@email.com",
+            "Phone": {
+              "Mobile": "0412345678"
+            },
+            "Address": [
+              {
+                "@Type": "Current",
+                "@Housing": "Renting",
+                "StreetNumber": "15",
+                "Street": "Harbour Street",
+                "Suburb": "Sydney",
+                "State": "NSW",
+                "Postcode": "2000",
+                "Country": "AU",
+                "YearsAtAddress": 3
+              }
+            ],
+            "Employment": [
+              {
+                "@Type": "PAYG",
+                "Employer": "Acme Corp Pty Ltd",
+                "Role": "Software Engineer",
+                "StartDate": "2025-04-01",
+                "Income": {
+                  "GrossAnnual": 120000,
+                  "NetMonthly": 7800,
+                  "PayFrequency": "Monthly"
+                }
+              }
+            ],
+            "Privacy": {
+              "ConsentObtained": true,
+              "ConsentDate": "2026-04-14"
+            },
+            "Identification": [
+              {
+                "Type": "DriversLicence",
+                "Number": "DL12345678",
+                "State": "NSW",
+                "ExpiryDate": "2028-03-22"
+              },
+              {
+                "Type": "Passport",
+                "Number": "PA9876543",
+                "Country": "AU",
+                "ExpiryDate": "2031-06-15"
+              }
+            ]
+          }
+        ],
+        "RealEstateAsset": [
+          {
+            "@Transaction": "Purchasing",
+            "ContractPrice": {
+              "Amount": 850000,
+              "Currency": "AUD"
+            },
+            "Address": {
+              "StreetNumber": "42",
+              "Street": "Blue Gum Drive",
+              "Suburb": "Randwick",
+              "State": "NSW",
+              "Postcode": "2031",
+              "Country": "AU"
+            },
+            "PropertyType": "House",
+            "Bedrooms": 3,
+            "Bathrooms": 2,
+            "CarSpaces": 1,
+            "LandArea": 450,
+            "YearBuilt": 1985,
+            "Valuation": {
+              "EstimatedValue": 850000,
+              "ValuationDate": "2026-04-10",
+              "ValuationType": "Full",
+              "Valuer": "Herron Todd White"
+            }
+          }
+        ],
+        "LoanDetails": {
+          "LoanAmount": 782000,
+          "Term": 360,
+          "TermUnit": "Months",
+          "InterestType": "Variable",
+          "Rate": 6.39,
+          "RepaymentType": "PrincipalAndInterest",
+          "RepaymentFrequency": "Monthly",
+          "Product": {
+            "ProductName": "Home Advantage Variable",
+            "ProductCode": "HAV-001"
+          }
+        },
+        "Expense": [
+          { "Type": "Living", "MonthlyAmount": 2800 },
+          { "Type": "Insurance", "MonthlyAmount": 180 },
+          { "Type": "Transport", "MonthlyAmount": 350 },
+          { "Type": "Utilities", "MonthlyAmount": 280 }
+        ],
+        "Liability": [
+          {
+            "Type": "CreditCard",
+            "Balance": 3200,
+            "Limit": 8000,
+            "MonthlyPayment": 200,
+            "Institution": "CBA"
+          }
+        ],
+        "Asset": [
+          {
+            "Type": "SavingsAccount",
+            "Value": 95000,
+            "Institution": "Commonwealth Bank",
+            "Description": "Purchase deposit savings"
+          },
+          {
+            "Type": "Superannuation",
+            "Value": 145000,
+            "Institution": "AustralianSuper",
+            "Description": "Retirement fund"
+          }
+        ],
+        "Insurance": {
+          "LMI": {
+            "Required": true,
+            "Provider": "Helia",
+            "Premium": 12450,
+            "PolicyNumber": "LMI-2026-78432",
+            "CoveragePercentage": 92
+          }
+        }
+      }
+    },
+    "Publisher": {
+      "CompanyName": "Best Mortgage Brokers Pty Ltd",
+      "ABN": "12345678901",
+      "ContactPerson": "James Wilson",
+      "Email": "james@bestbrokers.com.au",
+      "Phone": "0298765432"
+    },
+    "Recipient": {
+      "CompanyName": "Atheryon Labs",
+      "Description": "Mortgage Platform"
+    },
+    "SchemaVersion": "2.6.91"
+  }
+}
