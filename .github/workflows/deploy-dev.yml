@@ -66,6 +66,8 @@ jobs:
               --memory 1Gi \
               --min-replicas 1 \
               --max-replicas 3 \
+              --registry-server ${{ env.REGISTRY }} \
+              --registry-identity system \
               --env-vars \
                 SPRING_PROFILES_ACTIVE=dev \
                 JAVA_OPTS="-Xmx512m -Xms256m -XX:+UseG1GC -XX:+UseContainerSupport"
