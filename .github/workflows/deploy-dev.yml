@@ -55,6 +55,9 @@ jobs:
         run: |
           IMAGE="${{ steps.meta.outputs.image }}"
           if ! az containerapp show --name ${{ env.CONTAINER_APP }} --resource-group ${{ env.RESOURCE_GROUP }} > /dev/null 2>&1; then
+            # Get ACR credentials for initial create (matches CDM Schema pattern)
+            ACR_USERNAME=$(az acr credential show --name crlabsdev --query username -o tsv)
+            ACR_PASSWORD=$(az acr credential show --name crlabsdev --query "passwords[0].value" -o tsv)
             az containerapp create \
               --name ${{ env.CONTAINER_APP }} \
               --resource-group ${{ env.RESOURCE_GROUP }} \
@@ -67,7 +70,8 @@ jobs:
               --min-replicas 1 \
               --max-replicas 3 \
               --registry-server ${{ env.REGISTRY }} \
-              --registry-identity system \
+              --registry-username "$ACR_USERNAME" \
+              --registry-password "$ACR_PASSWORD" \
               --env-vars \
                 SPRING_PROFILES_ACTIVE=dev \
                 JAVA_OPTS="-Xmx512m -Xms256m -XX:+UseG1GC -XX:+UseContainerSupport"
