@@ -11,6 +11,7 @@ import com.atheryon.mortgages.exception.ResourceNotFoundException;
 import com.atheryon.mortgages.repository.LoanApplicationRepository;
 import com.atheryon.mortgages.repository.OfferRepository;
 import com.atheryon.mortgages.statemachine.ApplicationStateMachine;
+import com.atheryon.mortgages.util.MortgageMath;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -62,7 +63,7 @@ public class OfferService {
             interestRate = app.getProduct().getLendingRates().get(0).getRate();
         }
 
-        BigDecimal monthlyRepayment = calculateMonthlyRepayment(
+        BigDecimal monthlyRepayment = MortgageMath.monthlyRepayment(
                 approvedAmount, interestRate, app.getTermMonths());
 
         // Determine if LMI is required (LTV > 80%)
@@ -135,6 +136,10 @@ public class OfferService {
         offer.setOfferStatus(OfferStatus.DECLINED);
 
         LoanApplication app = offer.getApplication();
+        // Borrower-declined offers route the application to WITHDRAWN, not LAPSED.
+        // LAPSED is reserved for system-detected expiry (offer validity window
+        // elapsed without action). WITHDRAWN captures customer-initiated
+        // termination, which a decline unambiguously is.
         stateMachine.transition(app, ApplicationStatus.WITHDRAWN, "CUSTOMER", "CUSTOMER");
         app.setUpdatedAt(LocalDateTime.now());
         applicationRepository.save(app);
@@ -161,18 +166,4 @@ public class OfferService {
         return expiredOffers;
     }
 
-    private BigDecimal calculateMonthlyRepayment(BigDecimal principal, BigDecimal annualRate, int termMonths) {
-        if (principal == null || termMonths <= 0) {
-            return BigDecimal.ZERO;
-        }
-        if (annualRate == null || annualRate.compareTo(BigDecimal.ZERO) == 0) {
-            return principal.divide(BigDecimal.valueOf(termMonths), 2, RoundingMode.HALF_UP);
-        }
-        double r = annualRate.doubleValue() / 12.0;
-        double n = termMonths;
-        double p = principal.doubleValue();
-        double factor = Math.pow(1 + r, n);
-        double monthly = p * (r * factor) / (factor - 1);
-        return BigDecimal.valueOf(monthly).setScale(2, RoundingMode.HALF_UP);
-    }
 }

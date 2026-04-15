@@ -11,6 +11,7 @@ import com.atheryon.mortgages.repository.WorkflowEventRepository;
 import com.atheryon.mortgages.rules.ServiceabilityCalculator;
 import com.atheryon.mortgages.rules.ServiceabilityResult;
 import com.atheryon.mortgages.statemachine.ApplicationStateMachine;
+import com.atheryon.mortgages.util.MortgageMath;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -84,7 +85,7 @@ public class AssessmentService {
             productRate = app.getProduct().getLendingRates().get(0).getRate();
         }
 
-        BigDecimal proposedRepayment = calculateMonthlyRepayment(
+        BigDecimal proposedRepayment = MortgageMath.monthlyRepayment(
                 app.getRequestedAmount(), productRate, app.getTermMonths());
 
         ServiceabilityResult result = serviceabilityCalculator.calculate(
@@ -98,24 +99,6 @@ public class AssessmentService {
         snapshot.setServiceabilityOutcome(result.getOutcome());
 
         return snapshotRepository.save(snapshot);
-    }
-
-    private BigDecimal calculateMonthlyRepayment(BigDecimal principal, BigDecimal annualRate, int termMonths) {
-        if (principal == null || termMonths <= 0) {
-            return BigDecimal.ZERO;
-        }
-        if (annualRate == null || annualRate.compareTo(BigDecimal.ZERO) == 0) {
-            return principal.divide(BigDecimal.valueOf(termMonths), 2, java.math.RoundingMode.HALF_UP);
-        }
-
-        // Standard amortisation formula: M = P * [r(1+r)^n] / [(1+r)^n - 1]
-        double r = annualRate.doubleValue() / 12.0;
-        double n = termMonths;
-        double p = principal.doubleValue();
-        double factor = Math.pow(1 + r, n);
-        double monthly = p * (r * factor) / (factor - 1);
-
-        return BigDecimal.valueOf(monthly).setScale(2, java.math.RoundingMode.HALF_UP);
     }
 
     private void recordEvent(LoanApplication app, String eventType, String actorId,
