@@ -52,12 +52,6 @@ class ApplicationLifecycleIntegrationTest {
     private LoanApplicationRepository loanApplicationRepository;
 
     @Autowired
-    private ConsentRecordRepository consentRecordRepository;
-
-    @Autowired
-    private DecisionRecordRepository decisionRecordRepository;
-
-    @Autowired
     private EntityManager entityManager;
 
     private Product testProduct;
@@ -220,19 +214,26 @@ class ApplicationLifecycleIntegrationTest {
         String outcome = decisionJson.get("outcome").asText();
         assertThat(outcome).isIn("APPROVED", "CONDITIONALLY_APPROVED", "DECLINED", "REFERRED_TO_UNDERWRITER");
 
-        // If outcome is not APPROVED/CONDITIONALLY_APPROVED, coerce the DecisionRecord via repo so
-        // OfferService.generateOffer's outcome gate passes. Status stays DECISIONED — which is correct.
-        entityManager.flush();
-        entityManager.clear();
-        LoanApplication currentApp = loanApplicationRepository.findById(appId).orElseThrow();
-        DecisionRecord decisionRecord = currentApp.getDecisionRecord();
-        if (decisionRecord != null
-                && decisionRecord.getOutcome() != DecisionOutcome.APPROVED
-                && decisionRecord.getOutcome() != DecisionOutcome.CONDITIONALLY_APPROVED) {
-            decisionRecord.setOutcome(DecisionOutcome.APPROVED);
-            decisionRecordRepository.save(decisionRecord);
-            entityManager.flush();
-            entityManager.clear();
+        // If the automated outcome is not offerable, perform a manual override through the API.
+        // This should update the existing DecisionRecord while keeping status at DECISIONED.
+        if (!"APPROVED".equals(outcome) && !"CONDITIONALLY_APPROVED".equals(outcome)) {
+            String overrideDecisionPayload = """
+                    {
+                        "outcome": "APPROVED",
+                        "decidedBy": "underwriter@atheryon.com",
+                        "reasons": [],
+                        "conditions": []
+                    }
+                    """;
+            mockMvc.perform(post("/api/v1/applications/{id}/decision", appId)
+                            .contentType(MediaType.APPLICATION_JSON)
+                            .content(overrideDecisionPayload))
+                    .andExpect(status().isOk())
+                    .andExpect(jsonPath("$.outcome").value("APPROVED"));
+
+            mockMvc.perform(get("/api/v1/applications/{id}", appId))
+                    .andExpect(status().isOk())
+                    .andExpect(jsonPath("$.status").value("DECISIONED"));
         }
 
         // Step 10: Generate offer → OFFER_ISSUED

@@ -8,4 +8,5 @@ import java.util.UUID;
 
 @Repository
 public interface DecisionConditionRepository extends JpaRepository<DecisionCondition, UUID> {
+    void deleteByDecisionRecordId(UUID decisionRecordId);
 }

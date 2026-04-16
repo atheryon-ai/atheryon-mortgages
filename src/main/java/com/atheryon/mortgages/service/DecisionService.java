@@ -117,23 +117,32 @@ public class DecisionService {
             stateMachine.transition(app, ApplicationStatus.DECISIONED, decidedBy, "UNDERWRITER");
         }
 
-        DecisionRecord record = new DecisionRecord();
-        record.setApplication(app);
+        DecisionRecord record = app.getDecisionRecord();
+        boolean updatingExistingRecord = record != null && record.getId() != null;
+        if (record == null) {
+            record = new DecisionRecord();
+            record.setApplication(app);
+        }
         record.setDecisionType(DecisionType.MANUAL);
         record.setOutcome(outcome);
         record.setDecidedBy(decidedBy);
         record.setDecisionDate(LocalDateTime.now());
-
-        if (outcome == DecisionOutcome.DECLINED) {
-            record.setDeclineReasons(reasons);
-        }
+        record.setDeclineReasons(
+                outcome == DecisionOutcome.DECLINED && reasons != null
+                        ? new ArrayList<>(reasons)
+                        : new ArrayList<>()
+        );
 
         DecisionRecord saved = decisionRecordRepository.save(record);
         app.setDecisionRecord(saved);
 
-        // Create conditions if provided
+        // A manual override replaces prior conditions on the same decision record.
+        if (updatingExistingRecord) {
+            conditionRepository.deleteByDecisionRecordId(saved.getId());
+        }
+
+        List<DecisionCondition> conditionList = new ArrayList<>();
         if (conditions != null && !conditions.isEmpty()) {
-            List<DecisionCondition> conditionList = new ArrayList<>();
             for (String desc : conditions) {
                 DecisionCondition condition = new DecisionCondition();
                 condition.setDecisionRecord(saved);
@@ -141,8 +150,8 @@ public class DecisionService {
                 condition.setStatus(ConditionStatus.OUTSTANDING);
                 conditionList.add(conditionRepository.save(condition));
             }
-            saved.setConditions(conditionList);
         }
+        saved.setConditions(conditionList);
 
         // Status stays at DECISIONED. Outcome is recorded on DecisionRecord.outcome above.
         // OfferService.generateOffer gates on decisionRecord.outcome ∈ {APPROVED, CONDITIONALLY_APPROVED}.
