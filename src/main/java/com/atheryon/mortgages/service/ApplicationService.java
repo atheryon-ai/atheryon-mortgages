@@ -10,6 +10,8 @@ import com.atheryon.mortgages.repository.LoanApplicationRepository;
 import com.atheryon.mortgages.repository.ProductRepository;
 import com.atheryon.mortgages.repository.WorkflowEventRepository;
 import com.atheryon.mortgages.statemachine.ApplicationStateMachine;
+import jakarta.persistence.EntityManager;
+import jakarta.persistence.PersistenceContext;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
@@ -29,7 +31,9 @@ public class ApplicationService {
     private final ProductRepository productRepository;
     private final ApplicationStateMachine stateMachine;
     private final WorkflowEventRepository workflowEventRepository;
-    private final AtomicLong sequenceCounter = new AtomicLong(1);
+
+    @PersistenceContext
+    private EntityManager entityManager;
 
     public ApplicationService(LoanApplicationRepository applicationRepository,
                               ProductRepository productRepository,
@@ -175,9 +179,19 @@ public class ApplicationService {
         workflowEventRepository.save(event);
     }
 
+    // Fallback counter used only when EntityManager is unavailable (e.g. pure-mock unit tests).
+    private static final AtomicLong FALLBACK_COUNTER = new AtomicLong(1);
+
     private String generateApplicationNumber() {
         int year = Year.now().getValue();
-        long seq = sequenceCounter.getAndIncrement();
+        long seq;
+        if (entityManager != null) {
+            seq = ((Number) entityManager
+                    .createNativeQuery("SELECT NEXT VALUE FOR application_number_seq")
+                    .getSingleResult()).longValue();
+        } else {
+            seq = FALLBACK_COUNTER.getAndIncrement();
+        }
         return String.format("ATH-%d-%06d", year, seq);
     }
 
