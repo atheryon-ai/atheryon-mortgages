@@ -1,14 +1,17 @@
 package com.atheryon.mortgages.service;
 
+import com.atheryon.mortgages.domain.entity.DecisionRecord;
 import com.atheryon.mortgages.domain.entity.LoanApplication;
 import com.atheryon.mortgages.domain.entity.Offer;
 import com.atheryon.mortgages.domain.enums.ApplicationStatus;
+import com.atheryon.mortgages.domain.enums.DecisionOutcome;
 import com.atheryon.mortgages.domain.enums.OfferStatus;
 import com.atheryon.mortgages.exception.BusinessRuleException;
 import com.atheryon.mortgages.exception.ResourceNotFoundException;
 import com.atheryon.mortgages.repository.LoanApplicationRepository;
 import com.atheryon.mortgages.repository.OfferRepository;
 import com.atheryon.mortgages.statemachine.ApplicationStateMachine;
+import com.atheryon.mortgages.util.MortgageMath;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -41,9 +44,16 @@ public class OfferService {
         LoanApplication app = applicationRepository.findById(applicationId)
                 .orElseThrow(() -> new ResourceNotFoundException("LoanApplication", "id", applicationId));
 
-        if (app.getStatus() != ApplicationStatus.APPROVED) {
+        if (app.getStatus() != ApplicationStatus.DECISIONED) {
             throw new BusinessRuleException("INVALID_OFFER_STATE",
-                    "Offers can only be generated for APPROVED applications");
+                    "Offers can only be generated for applications in DECISIONED status");
+        }
+        DecisionRecord decision = app.getDecisionRecord();
+        if (decision == null
+                || (decision.getOutcome() != DecisionOutcome.APPROVED
+                        && decision.getOutcome() != DecisionOutcome.CONDITIONALLY_APPROVED)) {
+            throw new BusinessRuleException("INVALID_OFFER_OUTCOME",
+                    "Offers can only be generated when decisionRecord.outcome is APPROVED or CONDITIONALLY_APPROVED");
         }
 
         BigDecimal approvedAmount = app.getRequestedAmount();
@@ -53,7 +63,7 @@ public class OfferService {
             interestRate = app.getProduct().getLendingRates().get(0).getRate();
         }
 
-        BigDecimal monthlyRepayment = calculateMonthlyRepayment(
+        BigDecimal monthlyRepayment = MortgageMath.monthlyRepayment(
                 approvedAmount, interestRate, app.getTermMonths());
 
         // Determine if LMI is required (LTV > 80%)
@@ -112,7 +122,7 @@ public class OfferService {
         offer.setAcceptedBy(acceptedBy);
 
         LoanApplication app = offer.getApplication();
-        stateMachine.transition(app, ApplicationStatus.OFFER_ACCEPTED, acceptedBy, "CUSTOMER");
+        stateMachine.transition(app, ApplicationStatus.ACCEPTED, acceptedBy, "CUSTOMER");
         app.setUpdatedAt(LocalDateTime.now());
         applicationRepository.save(app);
 
@@ -126,6 +136,10 @@ public class OfferService {
         offer.setOfferStatus(OfferStatus.DECLINED);
 
         LoanApplication app = offer.getApplication();
+        // Borrower-declined offers route the application to WITHDRAWN, not LAPSED.
+        // LAPSED is reserved for system-detected expiry (offer validity window
+        // elapsed without action). WITHDRAWN captures customer-initiated
+        // termination, which a decline unambiguously is.
         stateMachine.transition(app, ApplicationStatus.WITHDRAWN, "CUSTOMER", "CUSTOMER");
         app.setUpdatedAt(LocalDateTime.now());
         applicationRepository.save(app);
@@ -152,18 +166,4 @@ public class OfferService {
         return expiredOffers;
     }
 
-    private BigDecimal calculateMonthlyRepayment(BigDecimal principal, BigDecimal annualRate, int termMonths) {
-        if (principal == null || termMonths <= 0) {
-            return BigDecimal.ZERO;
-        }
-        if (annualRate == null || annualRate.compareTo(BigDecimal.ZERO) == 0) {
-            return principal.divide(BigDecimal.valueOf(termMonths), 2, RoundingMode.HALF_UP);
-        }
-        double r = annualRate.doubleValue() / 12.0;
-        double n = termMonths;
-        double p = principal.doubleValue();
-        double factor = Math.pow(1 + r, n);
-        double monthly = p * (r * factor) / (factor - 1);
-        return BigDecimal.valueOf(monthly).setScale(2, RoundingMode.HALF_UP);
-    }
 }

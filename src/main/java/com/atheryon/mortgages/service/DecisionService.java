@@ -74,10 +74,11 @@ public class DecisionService {
 
         DecisionResult result = decisionEngine.evaluate(app, snapshot, creditScore, ltv);
 
-        // Transition to DECISIONED first
+        // Status advances to DECISIONED regardless of outcome.
+        // Decision outcomes (APPROVED / CONDITIONALLY_APPROVED / DECLINED / REFERRED_TO_UNDERWRITER)
+        // are recorded on DecisionRecord.outcome, not as status values.
         stateMachine.transition(app, ApplicationStatus.DECISIONED, "SYSTEM", "SYSTEM");
 
-        // Create decision record
         DecisionRecord record = new DecisionRecord();
         record.setApplication(app);
         record.setDecisionType(DecisionType.AUTOMATED);
@@ -92,12 +93,6 @@ public class DecisionService {
 
         DecisionRecord saved = decisionRecordRepository.save(record);
         app.setDecisionRecord(saved);
-
-        // Transition to final outcome status
-        ApplicationStatus targetStatus = mapOutcomeToStatus(result.getOutcome());
-        if (targetStatus != null) {
-            stateMachine.transition(app, targetStatus, "SYSTEM", "SYSTEM");
-        }
 
         app.setUpdatedAt(LocalDateTime.now());
         applicationRepository.save(app);
@@ -122,8 +117,8 @@ public class DecisionService {
             stateMachine.transition(app, ApplicationStatus.DECISIONED, decidedBy, "UNDERWRITER");
         }
 
-        // Reuse existing record if overriding a prior decision (unique constraint on application_id)
         DecisionRecord record = app.getDecisionRecord();
+        boolean updatingExistingRecord = record != null && record.getId() != null;
         if (record == null) {
             record = new DecisionRecord();
             record.setApplication(app);
@@ -132,17 +127,22 @@ public class DecisionService {
         record.setOutcome(outcome);
         record.setDecidedBy(decidedBy);
         record.setDecisionDate(LocalDateTime.now());
-
-        if (outcome == DecisionOutcome.DECLINED) {
-            record.setDeclineReasons(reasons);
-        }
+        record.setDeclineReasons(
+                outcome == DecisionOutcome.DECLINED && reasons != null
+                        ? new ArrayList<>(reasons)
+                        : new ArrayList<>()
+        );
 
         DecisionRecord saved = decisionRecordRepository.save(record);
         app.setDecisionRecord(saved);
 
-        // Create conditions if provided
+        // A manual override replaces prior conditions on the same decision record.
+        if (updatingExistingRecord) {
+            conditionRepository.deleteByDecisionRecordId(saved.getId());
+        }
+
+        List<DecisionCondition> conditionList = new ArrayList<>();
         if (conditions != null && !conditions.isEmpty()) {
-            List<DecisionCondition> conditionList = new ArrayList<>();
             for (String desc : conditions) {
                 DecisionCondition condition = new DecisionCondition();
                 condition.setDecisionRecord(saved);
@@ -150,15 +150,11 @@ public class DecisionService {
                 condition.setStatus(ConditionStatus.OUTSTANDING);
                 conditionList.add(conditionRepository.save(condition));
             }
-            saved.setConditions(conditionList);
         }
+        saved.setConditions(conditionList);
 
-        // Transition to outcome status
-        ApplicationStatus targetStatus = mapOutcomeToStatus(outcome);
-        if (targetStatus != null) {
-            stateMachine.transition(app, targetStatus, decidedBy, "UNDERWRITER");
-        }
-
+        // Status stays at DECISIONED. Outcome is recorded on DecisionRecord.outcome above.
+        // OfferService.generateOffer gates on decisionRecord.outcome ∈ {APPROVED, CONDITIONALLY_APPROVED}.
         app.setUpdatedAt(LocalDateTime.now());
         applicationRepository.save(app);
 
@@ -175,12 +171,4 @@ public class DecisionService {
         return conditionRepository.save(condition);
     }
 
-    private ApplicationStatus mapOutcomeToStatus(DecisionOutcome outcome) {
-        return switch (outcome) {
-            case APPROVED -> ApplicationStatus.APPROVED;
-            case CONDITIONALLY_APPROVED -> ApplicationStatus.CONDITIONALLY_APPROVED;
-            case DECLINED -> ApplicationStatus.DECLINED;
-            case REFERRED_TO_UNDERWRITER -> null; // Stay in DECISIONED, awaiting manual review
-        };
-    }
 }
