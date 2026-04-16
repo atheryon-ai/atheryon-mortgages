@@ -29,11 +29,16 @@ public record ApplicationResponse(
     LocalDateTime decisionedAt
 ) {
     public static ApplicationResponse from(LoanApplication app) {
-        List<PartyResponse> partyResponses = app.getApplicationParties() == null
-            ? List.of()
-            : app.getApplicationParties().stream()
-                .map(ap -> PartyResponse.from(ap.getParty(), ap.getRole()))
-                .toList();
+        List<PartyResponse> partyResponses;
+        try {
+            partyResponses = app.getApplicationParties() == null
+                ? List.of()
+                : app.getApplicationParties().stream()
+                    .map(ap -> PartyResponse.from(ap.getParty(), ap.getRole()))
+                    .toList();
+        } catch (org.hibernate.LazyInitializationException e) {
+            partyResponses = List.of();
+        }
 
         return new ApplicationResponse(
             app.getId(),

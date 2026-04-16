@@ -1,0 +1,132 @@
+{
+  "Package": {
+    "@UniqueID": "PKG-2026-003",
+    "@ProductionData": true,
+    "Content": {
+      "Application": {
+        "@UniqueID": "APP-2026-SARAH-003",
+        "Overview": {
+          "LoanPurpose": "OWNER_OCCUPIED_PURCHASE",
+          "Submitted": "2026-04-15T11:30:00+10:00"
+        },
+        "PersonApplicant": [
+          {
+            "@PrimaryApplicant": true,
+            "PersonName": {
+              "FirstName": "Sarah",
+              "MiddleName": "Jane",
+              "Surname": "Mitchell"
+            },
+            "Gender": "Female",
+            "Email": "sarah.mitchell@email.com",
+            "Phone": {
+              "Mobile": "0412345678"
+            },
+            "Address": [
+              {
+                "@Type": "Current",
+                "@Housing": "Renting",
+                "StreetNumber": "15",
+                "Street": "Harbour Street",
+                "Suburb": "Sydney",
+                "State": "NSW",
+                "Postcode": "2000",
+                "Country": "AU",
+                "YearsAtAddress": 3
+              }
+            ],
+            "Employment": [
+              {
+                "@Type": "PAYG",
+                "Employer": "Acme Corp Pty Ltd",
+                "Role": "Senior Software Engineer",
+                "StartDate": "2020-01-15",
+                "Income": {
+                  "GrossAnnual": 120000,
+                  "NetMonthly": 7800,
+                  "PayFrequency": "Monthly"
+                }
+              }
+            ],
+            "Privacy": {}
+          },
+          {
+            "@PrimaryApplicant": false,
+            "PersonName": {
+              "FirstName": "Mark",
+              "Surname": "Mitchell"
+            },
+            "DateOfBirth": "1983-11-08",
+            "Gender": "Male",
+            "Email": "mark.mitchell@email.com",
+            "Employment": [
+              {
+                "@Type": "PAYG",
+                "Employer": "Mitchell & Partners",
+                "Role": "Accountant",
+                "StartDate": "2018-06-01",
+                "Income": {
+                  "GrossAnnual": 95000,
+                  "NetMonthly": 6200,
+                  "PayFrequency": "Monthly"
+                }
+              }
+            ],
+            "Privacy": {
+              "ConsentObtained": true,
+              "ConsentDate": "2026-04-14"
+            }
+          }
+        ],
+        "RealEstateAsset": [
+          {
+            "@Transaction": "Purchasing",
+            "ContractPrice": {
+              "Amount": 850000,
+              "Currency": "AUD"
+            },
+            "PropertyType": "House",
+            "Bedrooms": 3,
+            "Bathrooms": 2,
+            "CarSpaces": 1
+          }
+        ],
+        "LoanDetails": {
+          "Term": 360,
+          "TermUnit": "Months",
+          "InterestType": "Variable",
+          "Rate": 6.19,
+          "RepaymentType": "PrincipalAndInterest",
+          "RepaymentFrequency": "Monthly",
+          "Product": {
+            "ProductName": "Home Advantage Variable",
+            "ProductCode": "HAV-001"
+          }
+        },
+        "Expense": [
+          { "Type": "Living", "MonthlyAmount": 3500 }
+        ],
+        "Liability": [],
+        "Insurance": {
+          "LMI": {
+            "Required": false,
+            "Provider": null,
+            "Premium": null
+          }
+        }
+      }
+    },
+    "Publisher": {
+      "CompanyName": "Best Mortgage Brokers Pty Ltd",
+      "ABN": "12345678901",
+      "ContactPerson": "James Wilson",
+      "Email": "james@bestbrokers.com.au",
+      "Phone": "0298765432"
+    },
+    "Recipient": {
+      "CompanyName": "Atheryon Labs",
+      "Description": "Mortgage Platform"
+    },
+    "SchemaVersion": "2.6.91"
+  }
+}

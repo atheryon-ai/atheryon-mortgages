@@ -1,0 +1,187 @@
+{
+  "Package": {
+    "@UniqueID": "PKG-2026-006",
+    "@ProductionData": true,
+    "Content": {
+      "Application": {
+        "@UniqueID": "APP-2026-SARAH-006",
+        "Overview": {
+          "LoanPurpose": "OWNER_OCCUPIED_PURCHASE",
+          "Submitted": "2026-04-15T13:00:00+10:00"
+        },
+        "PersonApplicant": [
+          {
+            "@PrimaryApplicant": true,
+            "PersonName": {
+              "FirstName": "Sarah",
+              "MiddleName": "Jane",
+              "Surname": "Mitchell"
+            },
+            "DateOfBirth": "1985-03-22",
+            "Gender": "Female",
+            "Email": "sarah.mitchell@email.com",
+            "Phone": {
+              "Mobile": "0412345678"
+            },
+            "Address": [
+              {
+                "@Type": "Current",
+                "@Housing": "Renting",
+                "StreetNumber": "15",
+                "Street": "Harbour Street",
+                "Suburb": "Sydney",
+                "State": "NSW",
+                "Postcode": "2000",
+                "Country": "AU",
+                "YearsAtAddress": 3
+              }
+            ],
+            "Employment": [
+              {
+                "@Type": "PAYG",
+                "Employer": "Acme Corp Pty Ltd",
+                "Role": "Senior Software Engineer",
+                "StartDate": "2020-01-15",
+                "Income": {
+                  "GrossAnnual": 120000,
+                  "NetMonthly": 7800,
+                  "PayFrequency": "Monthly"
+                }
+              }
+            ],
+            "Privacy": {
+              "ConsentObtained": true,
+              "ConsentDate": "2026-04-14"
+            },
+            "Identification": [
+              {
+                "Type": "DriversLicence",
+                "Number": "DL12345678",
+                "State": "NSW",
+                "ExpiryDate": "2028-03-22"
+              }
+            ]
+          },
+          {
+            "@PrimaryApplicant": false,
+            "PersonName": {
+              "FirstName": "Mark",
+              "Surname": "Mitchell"
+            },
+            "DateOfBirth": "1983-11-08",
+            "Gender": "Male",
+            "Email": "mark.mitchell@email.com",
+            "Phone": {
+              "Mobile": "0423456789"
+            },
+            "Employment": [
+              {
+                "@Type": "PAYG",
+                "Employer": "Mitchell & Partners",
+                "Role": "Accountant",
+                "StartDate": "2018-06-01",
+                "Income": {
+                  "GrossAnnual": 95000,
+                  "NetMonthly": 6200,
+                  "PayFrequency": "Monthly"
+                }
+              }
+            ],
+            "Privacy": {
+              "ConsentObtained": true,
+              "ConsentDate": "2026-04-14"
+            },
+            "Identification": [
+              {
+                "Type": "DriversLicence",
+                "Number": "DL87654321",
+                "State": "NSW",
+                "ExpiryDate": "2027-11-08"
+              }
+            ]
+          }
+        ],
+        "RealEstateAsset": [
+          {
+            "@Transaction": "Purchasing",
+            "ContractPrice": {
+              "Amount": 850000,
+              "Currency": "AUD"
+            },
+            "Address": {
+              "StreetNumber": "42",
+              "Street": "Blue Gum Drive",
+              "Suburb": "Randwick",
+              "State": "NSW",
+              "Postcode": "2031",
+              "Country": "AU"
+            },
+            "PropertyType": "House",
+            "Bedrooms": 3,
+            "Bathrooms": 2,
+            "CarSpaces": 1,
+            "LandArea": 450,
+            "YearBuilt": 1985,
+            "Valuation": {
+              "EstimatedValue": 860000,
+              "ValuationDate": "2026-04-10",
+              "ValuationType": "Desktop",
+              "Valuer": "CoreLogic"
+            }
+          }
+        ],
+        "LoanDetails": {
+          "LoanAmount": 680000,
+          "Term": 360,
+          "TermUnit": "Months",
+          "InterestType": "Variable",
+          "RepaymentType": "PrincipalAndInterest",
+          "Product": {
+            "ProductName": "Home Advantage Variable",
+            "ProductCode": "HAV-001"
+          }
+        },
+        "Expense": [
+          { "Type": "Living", "MonthlyAmount": 3500 },
+          { "Type": "Insurance", "MonthlyAmount": 250 }
+        ],
+        "Liability": [
+          {
+            "Type": "CreditCard",
+            "Balance": 5000,
+            "Limit": 10000,
+            "MonthlyPayment": 300,
+            "Institution": "ANZ"
+          }
+        ],
+        "Asset": [
+          {
+            "Type": "SavingsAccount",
+            "Value": 210000,
+            "Institution": "Commonwealth Bank",
+            "Description": "Joint savings for deposit"
+          }
+        ],
+        "Insurance": {
+          "LMI": {
+            "Required": false,
+            "Provider": null,
+            "Premium": null
+          }
+        }
+      }
+    },
+    "Publisher": {
+      "CompanyName": "Best Mortgage Brokers Pty Ltd",
+      "ABN": "12345678901",
+      "ContactPerson": "James Wilson",
+      "Email": "james@bestbrokers.com.au",
+      "Phone": "0298765432"
+    },
+    "Recipient": {
+      "CompanyName": "Atheryon Labs",
+      "Description": "Mortgage Platform"
+    },
+    "SchemaVersion": "2.6.91"
+  }
+}

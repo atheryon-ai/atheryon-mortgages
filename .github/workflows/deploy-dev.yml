@@ -1,0 +1,126 @@
+name: Deploy to Dev
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+env:
+  REGISTRY: crlabsdev.azurecr.io
+  IMAGE_NAME: atheryon-mortgages
+  RESOURCE_GROUP: rg-atheryon-ai
+  CONTAINER_APP: ca-mortgages-dev
+  CONTAINER_ENV: cdm-containerenv-dev
+
+permissions:
+  id-token: write
+  contents: read
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Login to Azure
+        uses: azure/login@v2
+        with:
+          client-id: ${{ secrets.AZURE_CLIENT_ID }}
+          tenant-id: ${{ secrets.AZURE_TENANT_ID }}
+          subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
+
+      - name: Login to Azure Container Registry
+        run: az acr login --name crlabsdev
+
+      - name: Set image tag
+        id: meta
+        run: echo "image=${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:dev-${{ github.sha }}" >> $GITHUB_OUTPUT
+
+      - name: Build and push Docker image
+        uses: docker/build-push-action@v5
+        with:
+          context: .
+          push: true
+          tags: |
+            ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:latest
+            ${{ steps.meta.outputs.image }}
+          cache-from: type=registry,ref=${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:buildcache
+          cache-to: type=registry,ref=${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:buildcache,mode=max
+          platforms: linux/amd64
+
+      - name: Deploy to Container App
+        run: |
+          IMAGE="${{ steps.meta.outputs.image }}"
+          if ! az containerapp show --name ${{ env.CONTAINER_APP }} --resource-group ${{ env.RESOURCE_GROUP }} > /dev/null 2>&1; then
+            # Get ACR credentials for initial create (matches CDM Schema pattern)
+            ACR_USERNAME=$(az acr credential show --name crlabsdev --query username -o tsv)
+            ACR_PASSWORD=$(az acr credential show --name crlabsdev --query "passwords[0].value" -o tsv)
+            az containerapp create \
+              --name ${{ env.CONTAINER_APP }} \
+              --resource-group ${{ env.RESOURCE_GROUP }} \
+              --environment ${{ env.CONTAINER_ENV }} \
+              --image $IMAGE \
+              --target-port 8080 \
+              --ingress internal \
+              --cpu 0.5 \
+              --memory 1Gi \
+              --min-replicas 1 \
+              --max-replicas 3 \
+              --registry-server ${{ env.REGISTRY }} \
+              --registry-username "$ACR_USERNAME" \
+              --registry-password "$ACR_PASSWORD" \
+              --env-vars \
+                SPRING_PROFILES_ACTIVE=dev \
+                JAVA_OPTS="-Xmx512m -Xms256m -XX:+UseG1GC -XX:+UseContainerSupport"
+          else
+            az containerapp update \
+              --name ${{ env.CONTAINER_APP }} \
+              --resource-group ${{ env.RESOURCE_GROUP }} \
+              --image $IMAGE
+          fi
+
+      - name: Wait for revision to be active
+        run: |
+          echo "Waiting for active revision..."
+          for i in {1..20}; do
+            ACTIVE=$(az containerapp revision list \
+              --name ${{ env.CONTAINER_APP }} \
+              --resource-group ${{ env.RESOURCE_GROUP }} \
+              --query "[?properties.active] | length(@)" -o tsv)
+            if [ "$ACTIVE" -gt "0" ]; then
+              echo "Active revision found after ${i}x checks"
+              break
+            fi
+            sleep 10
+          done
+
+      - name: Health check
+        run: |
+          HEALTH=$(az containerapp revision list \
+            --name ${{ env.CONTAINER_APP }} \
+            --resource-group ${{ env.RESOURCE_GROUP }} \
+            --query "[?properties.active].properties.healthState" -o tsv)
+          echo "Revision health: $HEALTH"
+          if [ "$HEALTH" = "Unhealthy" ]; then
+            echo "WARNING: Revision is unhealthy"
+            az containerapp revision list \
+              --name ${{ env.CONTAINER_APP }} \
+              --resource-group ${{ env.RESOURCE_GROUP }} \
+              --query "[?properties.active]" -o json
+            exit 1
+          fi
+
+      - name: Print MORTGAGE_API_URL
+        run: |
+          FQDN=$(az containerapp show \
+            --name ${{ env.CONTAINER_APP }} \
+            --resource-group ${{ env.RESOURCE_GROUP }} \
+            --query "properties.configuration.ingress.fqdn" -o tsv)
+          echo "MORTGAGE_API_URL=https://$FQDN"
+          echo "Set this as a secret on labs-platform repo:"
+          echo "  gh secret set MORTGAGE_API_URL --body \"https://$FQDN\" --repo atheryon-ai/labs-platform"
+          echo "Add federated credential for this repo:"
+          echo "  subject: repo:atheryon-ai/mortgages-platform:ref:refs/heads/main"

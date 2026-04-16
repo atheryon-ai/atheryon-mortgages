@@ -1,0 +1,640 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://atheryon.ai/schemas/lixi/cal-2.6.91.json",
+  "title": "LIXI2 CAL Message",
+  "description": "JSON Schema for LIXI2 Credit Application Lodgement (CAL) message v2.6.91",
+  "type": "object",
+  "required": ["Package"],
+  "additionalProperties": false,
+  "properties": {
+    "Package": {
+      "type": "object",
+      "required": ["@UniqueID", "Content", "Publisher", "Recipient", "SchemaVersion"],
+      "additionalProperties": false,
+      "properties": {
+        "@UniqueID": {
+          "type": "string",
+          "minLength": 1,
+          "description": "Unique identifier for this package"
+        },
+        "@ProductionData": {
+          "type": "boolean",
+          "description": "Whether this is production data (true) or test data (false)"
+        },
+        "Content": {
+          "$ref": "#/$defs/Content"
+        },
+        "Publisher": {
+          "$ref": "#/$defs/Publisher"
+        },
+        "Recipient": {
+          "$ref": "#/$defs/Recipient"
+        },
+        "SchemaVersion": {
+          "type": "string",
+          "description": "LIXI schema version identifier"
+        }
+      }
+    }
+  },
+  "$defs": {
+    "Content": {
+      "type": "object",
+      "required": ["Application"],
+      "additionalProperties": false,
+      "properties": {
+        "Application": {
+          "$ref": "#/$defs/Application"
+        }
+      }
+    },
+    "Application": {
+      "type": "object",
+      "required": ["PersonApplicant", "LoanDetails"],
+      "additionalProperties": false,
+      "properties": {
+        "@UniqueID": {
+          "type": "string"
+        },
+        "Overview": {
+          "$ref": "#/$defs/Overview"
+        },
+        "PersonApplicant": {
+          "type": "array",
+          "minItems": 1,
+          "items": {
+            "$ref": "#/$defs/PersonApplicant"
+          }
+        },
+        "RealEstateAsset": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/RealEstateAsset"
+          }
+        },
+        "LoanDetails": {
+          "$ref": "#/$defs/LoanDetails"
+        },
+        "Expense": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/Expense"
+          }
+        },
+        "Liability": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/Liability"
+          }
+        },
+        "Asset": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/Asset"
+          }
+        },
+        "Insurance": {
+          "$ref": "#/$defs/Insurance"
+        }
+      }
+    },
+    "Overview": {
+      "type": "object",
+      "properties": {
+        "LoanPurpose": {
+          "type": "string",
+          "enum": [
+            "OWNER_OCCUPIED_PURCHASE",
+            "INVESTMENT_PURCHASE",
+            "REFINANCE",
+            "CONSTRUCTION",
+            "EQUITY_RELEASE",
+            "BRIDGING"
+          ]
+        },
+        "Submitted": {
+          "type": "string",
+          "format": "date-time"
+        }
+      },
+      "additionalProperties": false
+    },
+    "PersonApplicant": {
+      "type": "object",
+      "required": ["PersonName"],
+      "additionalProperties": false,
+      "properties": {
+        "@PrimaryApplicant": {
+          "type": "boolean"
+        },
+        "PersonName": {
+          "$ref": "#/$defs/PersonName"
+        },
+        "DateOfBirth": {
+          "type": "string",
+          "format": "date"
+        },
+        "Gender": {
+          "type": "string",
+          "enum": ["Male", "Female", "Other", "PreferNotToSay"]
+        },
+        "Email": {
+          "type": "string",
+          "format": "email"
+        },
+        "Phone": {
+          "$ref": "#/$defs/Phone"
+        },
+        "Address": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/Address"
+          }
+        },
+        "Employment": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/Employment"
+          }
+        },
+        "Income": {
+          "$ref": "#/$defs/ApplicantIncome"
+        },
+        "Privacy": {
+          "$ref": "#/$defs/Privacy"
+        },
+        "Identification": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/Identification"
+          }
+        }
+      }
+    },
+    "PersonName": {
+      "type": "object",
+      "required": ["FirstName", "Surname"],
+      "additionalProperties": false,
+      "properties": {
+        "Title": {
+          "type": "string"
+        },
+        "FirstName": {
+          "type": "string",
+          "minLength": 1
+        },
+        "MiddleName": {
+          "type": "string"
+        },
+        "Surname": {
+          "type": "string",
+          "minLength": 1
+        }
+      }
+    },
+    "Phone": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "Mobile": {
+          "type": "string"
+        },
+        "Home": {
+          "type": "string"
+        },
+        "Work": {
+          "type": "string"
+        }
+      }
+    },
+    "Address": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "@Type": {
+          "type": "string",
+          "enum": ["Current", "Previous", "Postal", "Employer"]
+        },
+        "@Housing": {
+          "type": "string",
+          "enum": ["Renting", "OwnerOccupied", "Boarding", "LivingWithParents", "Other"]
+        },
+        "UnitNumber": {
+          "type": "string"
+        },
+        "StreetNumber": {
+          "type": "string"
+        },
+        "Street": {
+          "type": "string"
+        },
+        "Suburb": {
+          "type": "string"
+        },
+        "State": {
+          "type": "string"
+        },
+        "Postcode": {
+          "type": "string"
+        },
+        "Country": {
+          "type": "string",
+          "default": "AU"
+        },
+        "YearsAtAddress": {
+          "type": "integer",
+          "minimum": 0
+        }
+      }
+    },
+    "Employment": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "@Type": {
+          "type": "string",
+          "enum": ["PAYG", "SelfEmployed", "Contract", "Casual", "Retired", "HomeCareer", "Student", "Unemployed"]
+        },
+        "Employer": {
+          "type": "string"
+        },
+        "Role": {
+          "type": "string"
+        },
+        "StartDate": {
+          "type": "string",
+          "format": "date"
+        },
+        "EndDate": {
+          "type": "string",
+          "format": "date"
+        },
+        "Income": {
+          "$ref": "#/$defs/EmploymentIncome"
+        }
+      }
+    },
+    "EmploymentIncome": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "GrossAnnual": {
+          "type": "number",
+          "minimum": 0
+        },
+        "NetMonthly": {
+          "type": "number",
+          "minimum": 0
+        },
+        "PayFrequency": {
+          "type": "string",
+          "enum": ["Weekly", "Fortnightly", "Monthly", "Annually"]
+        }
+      }
+    },
+    "ApplicantIncome": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "NonEmployment": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/NonEmploymentIncome"
+          }
+        }
+      }
+    },
+    "NonEmploymentIncome": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "Type": {
+          "type": "string",
+          "enum": ["RentalIncome", "GovernmentBenefit", "Superannuation", "Dividends", "Other"]
+        },
+        "GrossAnnual": {
+          "type": "number",
+          "minimum": 0
+        },
+        "Description": {
+          "type": "string"
+        }
+      }
+    },
+    "Privacy": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "ConsentObtained": {
+          "type": "boolean"
+        },
+        "ConsentDate": {
+          "type": "string",
+          "format": "date"
+        }
+      }
+    },
+    "Identification": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "Type": {
+          "type": "string",
+          "enum": ["DriversLicence", "Passport", "MedicareCard", "BirthCertificate", "ProofOfAge", "Other"]
+        },
+        "Number": {
+          "type": "string"
+        },
+        "State": {
+          "type": "string"
+        },
+        "Country": {
+          "type": "string"
+        },
+        "ExpiryDate": {
+          "type": "string",
+          "format": "date"
+        }
+      }
+    },
+    "RealEstateAsset": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "@Transaction": {
+          "type": "string",
+          "enum": ["Purchasing", "Owned", "Selling", "Refinancing"]
+        },
+        "ContractPrice": {
+          "$ref": "#/$defs/MoneyAmount"
+        },
+        "Address": {
+          "$ref": "#/$defs/PropertyAddress"
+        },
+        "PropertyType": {
+          "type": "string",
+          "enum": ["House", "Unit", "Townhouse", "Apartment", "Land", "Rural", "Commercial"]
+        },
+        "Bedrooms": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "Bathrooms": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "CarSpaces": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "LandArea": {
+          "type": "number",
+          "minimum": 0
+        },
+        "YearBuilt": {
+          "type": "integer"
+        },
+        "Valuation": {
+          "$ref": "#/$defs/Valuation"
+        }
+      }
+    },
+    "PropertyAddress": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "UnitNumber": {
+          "type": "string"
+        },
+        "StreetNumber": {
+          "type": "string"
+        },
+        "Street": {
+          "type": "string"
+        },
+        "Suburb": {
+          "type": "string"
+        },
+        "State": {
+          "type": "string"
+        },
+        "Postcode": {
+          "type": "string"
+        },
+        "Country": {
+          "type": "string"
+        }
+      }
+    },
+    "MoneyAmount": {
+      "type": "object",
+      "required": ["Amount"],
+      "additionalProperties": false,
+      "properties": {
+        "Amount": {
+          "type": "number",
+          "minimum": 0
+        },
+        "Currency": {
+          "type": "string",
+          "default": "AUD"
+        }
+      }
+    },
+    "Valuation": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "EstimatedValue": {
+          "type": "number",
+          "minimum": 0
+        },
+        "ValuationDate": {
+          "type": "string",
+          "format": "date"
+        },
+        "ValuationType": {
+          "type": "string",
+          "enum": ["Desktop", "FullInspection", "Kerbside", "AVM"]
+        },
+        "Valuer": {
+          "type": "string"
+        }
+      }
+    },
+    "LoanDetails": {
+      "type": "object",
+      "required": ["LoanAmount", "Term"],
+      "additionalProperties": false,
+      "properties": {
+        "LoanAmount": {
+          "type": "number",
+          "exclusiveMinimum": 0
+        },
+        "Term": {
+          "type": "integer",
+          "minimum": 12,
+          "maximum": 480
+        },
+        "TermUnit": {
+          "type": "string",
+          "enum": ["Months", "Years"],
+          "default": "Months"
+        },
+        "InterestType": {
+          "type": "string",
+          "enum": ["Variable", "Fixed", "Split"]
+        },
+        "Rate": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 100
+        },
+        "RepaymentType": {
+          "type": "string",
+          "enum": ["PrincipalAndInterest", "InterestOnly"]
+        },
+        "RepaymentFrequency": {
+          "type": "string",
+          "enum": ["Weekly", "Fortnightly", "Monthly"]
+        },
+        "Product": {
+          "$ref": "#/$defs/Product"
+        }
+      }
+    },
+    "Product": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "ProductName": {
+          "type": "string"
+        },
+        "ProductCode": {
+          "type": "string"
+        }
+      }
+    },
+    "Expense": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "Type": {
+          "type": "string"
+        },
+        "MonthlyAmount": {
+          "type": "number",
+          "minimum": 0
+        }
+      }
+    },
+    "Liability": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "Type": {
+          "type": "string"
+        },
+        "Balance": {
+          "type": "number",
+          "minimum": 0
+        },
+        "Limit": {
+          "type": "number",
+          "minimum": 0
+        },
+        "MonthlyPayment": {
+          "type": "number",
+          "minimum": 0
+        },
+        "Institution": {
+          "type": "string"
+        }
+      }
+    },
+    "Asset": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "Type": {
+          "type": "string"
+        },
+        "Value": {
+          "type": "number",
+          "minimum": 0
+        },
+        "Institution": {
+          "type": "string"
+        },
+        "Description": {
+          "type": "string"
+        }
+      }
+    },
+    "Insurance": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "LMI": {
+          "$ref": "#/$defs/LMI"
+        }
+      }
+    },
+    "LMI": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "Required": {
+          "type": "boolean"
+        },
+        "Provider": {
+          "type": ["string", "null"]
+        },
+        "Premium": {
+          "type": ["number", "null"]
+        }
+      }
+    },
+    "Publisher": {
+      "type": "object",
+      "required": ["CompanyName"],
+      "additionalProperties": false,
+      "properties": {
+        "CompanyName": {
+          "type": "string",
+          "minLength": 1
+        },
+        "ABN": {
+          "type": "string"
+        },
+        "ContactPerson": {
+          "type": "string"
+        },
+        "Email": {
+          "type": "string",
+          "format": "email"
+        },
+        "Phone": {
+          "type": "string"
+        },
+        "ACL": {
+          "type": "string"
+        }
+      }
+    },
+    "Recipient": {
+      "type": "object",
+      "required": ["CompanyName"],
+      "additionalProperties": false,
+      "properties": {
+        "CompanyName": {
+          "type": "string",
+          "minLength": 1
+        },
+        "Description": {
+          "type": "string"
+        }
+      }
+    }
+  }
+}
